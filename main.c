@@ -23,6 +23,80 @@
 
 
 
+
+
+
+
+
+
+
+
+
+void HandleEvent(SDL_Event event, int* gameover, SDL_Rect* tourPosition, int*placementTour)
+{
+
+    switch (event.type) {
+        /* close button clicked */
+        case SDL_QUIT:
+            *gameover = 1;
+            break;
+
+        /* handle the keyboard */
+        case SDL_KEYDOWN:
+            switch (event.key.keysym.sym) {
+                case SDLK_ESCAPE:
+                case SDLK_q:
+                    *gameover = 1;
+                    break;
+                case SDLK_LEFT:
+                    printf("left !!! \n");
+
+                    break;
+                case SDLK_RIGHT:
+
+                    break;
+                case SDLK_UP:
+
+                    break;
+                case SDLK_DOWN:
+
+                    break;
+                default:
+                    break;
+            }
+            break;
+            
+            
+                case SDL_MOUSEMOTION:
+
+                break;
+                case SDL_MOUSEBUTTONDOWN:
+                    tourPosition->x = event.motion.x-20;
+                    tourPosition->y = event.motion.y-20;
+                    *placementTour = 1;
+                break;
+            
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 void Deplacement(SDL_Rect* spritePosition, int copie_map[LARGEUR_MAP][HAUTEUR_MAP], int* currentDirection,int* animFlip, int* x, int* y, int* k){
     int i = *x;
     int j = *y;
@@ -145,11 +219,7 @@ void AfficherMap(SDL_Surface* screen,SDL_Surface* tileset,int table[LARGEUR_MAP]
     
     
     
-    
-    
-    
-    
-
+  
     
     
     
@@ -163,16 +233,7 @@ void AfficherMap(SDL_Surface* screen,SDL_Surface* tileset,int table[LARGEUR_MAP]
 {
     
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
     
     
 	int map[LARGEUR_MAP][HAUTEUR_MAP];
@@ -216,24 +277,7 @@ void AfficherMap(SDL_Surface* screen,SDL_Surface* tileset,int table[LARGEUR_MAP]
     int gameover = 0;
     int colorkey;
      
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-     
+
 
     //tentative de chargement d'un ennemi
 
@@ -253,21 +297,43 @@ void AfficherMap(SDL_Surface* screen,SDL_Surface* tileset,int table[LARGEUR_MAP]
     SDL_SetColorKey(sprite, SDL_SRCCOLORKEY | SDL_RLEACCEL, colorkey);
 
     
-    //tentative de chargement d'un autre ennemi
-//     SDL_Rect sprite2Position;
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+//chargement tour
+        SDL_Rect tourPosition;
 
-//     sprite2Position.x = 0;
-//     sprite2Position.y = 0;
+    tourPosition.x = 0;
+    tourPosition.y = 0;
 
-//     SDL_Surface *sprite2;
+    SDL_Surface *tour;
 
-//     temp   = SDL_LoadBMP("sprite.bmp");
-//     sprite2 = SDL_DisplayFormat(temp);
-//     SDL_FreeSurface(temp);
+    temp   = SDL_LoadBMP("bub_blue.bmp");
+    tour = SDL_DisplayFormat(temp);
+    SDL_FreeSurface(temp);
 
 
-//     colorkey = SDL_MapRGB(screen->format, 255, 0, 255);
-//     SDL_SetColorKey(sprite2, SDL_SRCCOLORKEY | SDL_RLEACCEL, colorkey);
+    colorkey = SDL_MapRGB(screen->format, 255, 0, 255);
+    SDL_SetColorKey(tour, SDL_SRCCOLORKEY | SDL_RLEACCEL, colorkey);
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     
     
 //     int copie_map2[LARGEUR_MAP][HAUTEUR_MAP];
@@ -286,14 +352,6 @@ void AfficherMap(SDL_Surface* screen,SDL_Surface* tileset,int table[LARGEUR_MAP]
         int currentDirection = 0;
 
 
-    
-    
-    
-    
-    
-    
-    
-
 
     
     
@@ -302,41 +360,35 @@ void AfficherMap(SDL_Surface* screen,SDL_Surface* tileset,int table[LARGEUR_MAP]
     i=0;
     j=0;
     int k=1;
-//     int l = 0;
-//     int m = 0;
-//     int n = 0;
-    int cpt = 0;
-    while (spritePosition.x < 20*30){
+    int placementTour = 0;
+
+    while (spritePosition.x < 20*30 && gameover == 0){
+
+        
+        if (SDL_PollEvent(&event)) {
+            HandleEvent(event, &gameover, &tourPosition, &placementTour);
+        }
         AfficherMap(screen,tileset,map);
         Deplacement(&spritePosition, copie_map, &currentDirection,&animationFlip, &i, &j, &k);
+
+        SDL_Rect spriteImage, tourImage;
+        spriteImage.y = 0;
+        spriteImage.w = 32;
+        spriteImage.h = 32;
+        spriteImage.x = 32*(2*currentDirection + animationFlip);
+        tourImage.y = 0;
+        tourImage.w = 40;
+        tourImage.h = 40;
+        tourImage.x = 0;        
         
         
-        /*if (cpt > 200){
-            Deplacement(&sprite2Position, copie_map2,  &l, &m, &n);          
-            SDL_BlitSurface(sprite2, &spriteImage, screen, &sprite2Position);
-            SDL_UpdateRect(screen,0,0,0,0);
-        }*/
-     cpt += 1; 
-     
-
-
-         
-   
-            SDL_Rect spriteImage;
-            spriteImage.y = 0;
-            spriteImage.w = 32;
-            spriteImage.h = 32;
-            /* choose image according to direction and animation flip: */
-            spriteImage.x = 32*(2*currentDirection + animationFlip);
-
-            SDL_BlitSurface(sprite, &spriteImage, screen, &spritePosition);
-
-            SDL_UpdateRect(screen,0,0,0,0);
-            
+        SDL_BlitSurface(sprite, &spriteImage, screen, &spritePosition);
+        if (placementTour == 1){
+            SDL_BlitSurface(tour, &tourImage, screen, &tourPosition);
+        }
+        SDL_UpdateRect(screen,0,0,0,0);
             
 
-            
-            
     }
     
 
@@ -344,57 +396,35 @@ void AfficherMap(SDL_Surface* screen,SDL_Surface* tileset,int table[LARGEUR_MAP]
     
  
     
-    
-    
-    
-    
-  
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
 
-    while (!gameover)
-    {
-        /* look for an event */
-        if (SDL_PollEvent(&event)) {
-            /* an event was found */
-            switch (event.type) {
-                /* close button clicked */
-                case SDL_QUIT:
-                    gameover = 1;
-                    break;
-
-                /* handle the keyboard */
-                case SDL_KEYDOWN:
-                    switch (event.key.keysym.sym) {
-                        case SDLK_ESCAPE:
-                        case SDLK_q:
-                            gameover = 1;
-                            break;
-                        /* do nothing for other keys */
-                        case SDLK_LEFT:
-                            printf("ouiiii ");
-                        default:
-                            break;
-                    }
-                    break;
-            }
-        }
-    }
-    
-}
+//     while (!gameover)
+//     {
+//         /* look for an event */
+//         if (SDL_PollEvent(&event)) {
+//             /* an event was found */
+//             switch (event.type) {
+//                 /* close button clicked */
+//                 case SDL_QUIT:
+//                     gameover = 1;
+//                     break;
+// 
+//                 /* handle the keyboard */
+//                 case SDL_KEYDOWN:
+//                     switch (event.key.keysym.sym) {
+//                         case SDLK_ESCAPE:
+//                         case SDLK_q:
+//                             gameover = 1;
+//                             break;
+//                         /* do nothing for other keys */
+//                         case SDLK_LEFT:
+//                             printf("ouiiii ");
+//                         default:
+//                             break;
+//                     }
+//                     break;
+//             }
+//         }
+//     }
+//     
+ }
 

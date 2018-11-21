@@ -126,7 +126,7 @@ void AfficherMap(SDL_Surface* screen, SDL_Surface* tileset, int table[WIDTH_MAP]
             SDL_BlitSurface(tileset,&Rect_source,screen,&Rect_dest);
         }
     }
-    SDL_Flip(screen);
+   
 }
 
 
@@ -142,6 +142,8 @@ void AfficherMap(SDL_Surface* screen, SDL_Surface* tileset, int table[WIDTH_MAP]
     int i,j, colorkey;
     int k = 1;
     int towerPositionning = 0;
+    int PosX, PosY;
+    int towerArray[WIDTH_MAP][HEIGHT_MAP];
 
     int gameover = 0;
     FILE* fichier = NULL;
@@ -201,8 +203,8 @@ void AfficherMap(SDL_Surface* screen, SDL_Surface* tileset, int table[WIDTH_MAP]
     SDL_Rect towerPosition;
   
     //set tower position
-    towerPosition.x = 0;
-    towerPosition.y = 0;
+   /* towerPosition.x = 0;
+    towerPosition.y = 17*TAILLE;*/
 
     //set sprite position
     spritePosition.x = 0;
@@ -235,13 +237,34 @@ void AfficherMap(SDL_Surface* screen, SDL_Surface* tileset, int table[WIDTH_MAP]
     else {
      
       // On affiche un message d'erreur si on veut
-      printf("Impossible d'ouvrir le fichier test.txt");
+      printf("Impossible d'ouvrir le fichier map.txt");
     }
     
     
+    
+    
+      /*init tab */
+     
+         for(j=0; j<WIDTH_MAP; j++){
+
+          for(i=0; i<HEIGHT_MAP; i++){
+		  towerArray[j][i] = 0 ;
+		  
+	    
+		  if ( i == 0  && j == HEIGHT_MAP-1 ){
+		    towerArray[j][i] = 1;
+		    
+		  
+		}
+	 }
+	  
+	  }
+	  
+    
     AfficherMap(screen,tileset,map);
  
-     
+   
+		  
 
 
 
@@ -257,12 +280,14 @@ void AfficherMap(SDL_Surface* screen, SDL_Surface* tileset, int table[WIDTH_MAP]
     spriteImage.y = 0;
     spriteImage.w = TAILLE;
     spriteImage.h = TAILLE;
+    // SDL_BlitSurface(tower, &towerImage, screen, &towerPosition);
+
      
     
 //     int copie_map2[WIDTH_MAP][HEIGHT_MAP];
     int copie_map[WIDTH_MAP][HEIGHT_MAP];
-    for (i=0;i<=HEIGHT_MAP+2;i++){
-        for (j=0;j<=HEIGHT_MAP+1;j++){
+    for (i=0;i<WIDTH_MAP;i++){
+        for (j=0;j<HEIGHT_MAP;j++){
             copie_map[i][j]=map[i][j];
 //             copie_map2[i][j]=map[i][j];
         }
@@ -280,24 +305,58 @@ void AfficherMap(SDL_Surface* screen, SDL_Surface* tileset, int table[WIDTH_MAP]
     j = 0;
    
 
-    while (spritePosition.x < 20*30 || gameover == 0){
+    while (/*pritePosition.x < 20*30 &&*/ gameover == 0){
+
+    	
 
         
         if (SDL_PollEvent(&event)) {
-            HandleEvent(event, &gameover, &towerPosition, &towerPositionning);
+            HandleEvent(event, &gameover, &towerPosition, &towerPositionning, &PosX, &PosY);
         }
+
+
         AfficherMap(screen,tileset,map);
         Deplacement(&spritePosition, copie_map, &currentDirection,&animationFlip, &i, &j, &k);
 
+
         spriteImage.x = TAILLE*(2*currentDirection + animationFlip);
-        
-
         SDL_BlitSurface(sprite, &spriteImage, screen, &spritePosition);
-        if (towerPositionning == 1){
-            SDL_BlitSurface(tower, &towerImage, screen, &towerPosition);
-        }
 
-        SDL_Flip(screen);
+
+
+
+       
+        if (towerPositionning == 1){
+		towerArray[towerPosition.y/TAILLE][towerPosition.x/TAILLE] = 1;
+		towerPositionning = 0;
+        }
+        
+        
+        
+              for (j=0;j< WIDTH_MAP;j++){
+        	for (i=0;i<HEIGHT_MAP;i++){
+			  if ( towerArray[j][i] == 1){
+			      
+			     /* SDL_BlitSurface(tower, &towerImage, screen, &towerPosition);*/
+			     	printf("i = %d j = %d array = %d\n" , i , j , towerArray[j][i]);
+			       towerPosition.x = i*TAILLE;
+			       towerPosition.y = j*TAILLE;
+			      
+			      
+			      SDL_BlitSurface(tower, &towerImage, screen, &towerPosition);
+
+
+			    
+			  }
+			}
+		}
+		
+		
+		
+		
+		
+
+        //SDL_Flip(screen);
         SDL_UpdateRect(screen,0,0,0,0);
 
 

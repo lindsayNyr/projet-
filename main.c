@@ -26,10 +26,11 @@
 
 
 
-void Attack(struct Tower* tour1 , struct Enemy* mechant){
+void Attack(struct Tower* tour1 , struct Enemy* mechant, int* argent){
   
   if ((tour1->Position.x -3*TAILLE) <= (mechant->Position.x) &&(mechant->Position.x)  <= (tour1->Position.x+3*TAILLE)  && (tour1->Position.y -3*TAILLE) <= (mechant->Position.y) && (mechant->Position.y)<= ( tour1->Position.y+3*TAILLE)){
     mechant->HP = 0;
+    
   }
 }
 
@@ -151,12 +152,15 @@ void AfficherMap(SDL_Surface* screen, SDL_Surface* tileset, int table[WIDTH_MAP]
     int i,j, colorkey;
     int k = 1;
     int towerPositionning = 0;
+    int argent = 20;
 
     int gameover = 0;
     FILE* fichier = NULL;
-    SDL_Surface *screen, *tileset, *tower, *sprite, *temp ;
+    SDL_Surface *screen, *tileset, *tower, *sprite, *temp, *texte = NULL ;
     SDL_Event event;
-    
+        TTF_Font *police = NULL;
+SDL_Rect positiontexte;
+    SDL_Color couleurNoire = {0, 0, 0};
 
 
     /* initialize SDL */
@@ -234,7 +238,7 @@ void AfficherMap(SDL_Surface* screen, SDL_Surface* tileset, int table[WIDTH_MAP]
     struct Tower tower1;
     tower1.distAttaque = 3;
     tower1.degats = 1;
-    tower1.cout = 0;
+    tower1.cout = 10;
 /*    tower1.Position.x = 0;
     tower1.Position.x = 0; */  
     
@@ -268,7 +272,7 @@ void AfficherMap(SDL_Surface* screen, SDL_Surface* tileset, int table[WIDTH_MAP]
     
     AfficherMap(screen,tileset,map);
  
-     
+     printf("vous avez %d euros \n", argent);
 
 
 
@@ -288,34 +292,38 @@ void AfficherMap(SDL_Surface* screen, SDL_Surface* tileset, int table[WIDTH_MAP]
     
 //     int copie_map2[WIDTH_MAP][HEIGHT_MAP];
     int copie_map[WIDTH_MAP][HEIGHT_MAP];
-    for (i=0;i<=HEIGHT_MAP+2;i++){
-        for (j=0;j<=HEIGHT_MAP+1;j++){
+    for (i=0;i<WIDTH_MAP;i++){
+        for (j=0;j<HEIGHT_MAP;j++){
             copie_map[i][j]=map[i][j];
 //             copie_map2[i][j]=map[i][j];
         }
     }
-    
-    
 
-
-
-    
-    
 
     //tentative de deplacement d'un ennemi
     i = 0;
     j = 0;
    
 
+      TTF_Init();
+       /* Chargement de la police */
+
+    police = TTF_OpenFont("arial.ttf", 65);
+
+    /* Écriture du texte dans la SDL_Surface texte en mode Blended (optimal) */
+
+    texte = TTF_RenderText_Blended(police, "Salut !", couleurNoire);
+    
+    
     while (mechant.Position.x < 20*30 && gameover == 0){
 
         
         if (SDL_PollEvent(&event)) {
-            HandleEvent(event, &gameover, &tower1.Position, &towerPositionning);
+            HandleEvent(event, &gameover, &tower1.Position, &towerPositionning, &argent, &tower1.cout);
         }
         AfficherMap(screen,tileset,map);
         Deplacement(&mechant, copie_map, &currentDirection,&animationFlip, &i, &j, &k);
-	Attack(&tower1, &mechant);
+	Attack(&tower1, &mechant,&argent);
         spriteImage.x = TAILLE*(2*currentDirection + animationFlip);
         
 
@@ -323,11 +331,17 @@ void AfficherMap(SDL_Surface* screen, SDL_Surface* tileset, int table[WIDTH_MAP]
         if (towerPositionning == 1){
             SDL_BlitSurface(tower, &towerImage, screen, &tower1.Position);
         }
+	        positiontexte.x = 60;
 
+        positiontexte.y = 370;
+
+        SDL_BlitSurface(texte, NULL, screen, &positiontexte);
         SDL_Flip(screen);
         SDL_UpdateRect(screen,0,0,0,0);
+	printf("il vous reste %d euros \n", argent);
+	
+	
 
-    
     }
 
     

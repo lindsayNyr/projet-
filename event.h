@@ -30,10 +30,12 @@ void HandleEvent(SDL_Event event, int* gameover, SDL_Rect* towerPosition, int *t
                 case SDL_MOUSEBUTTONDOWN:
 		   
 		 /* if ( event.motion.x < 32 &&  event.motion.x > 0 && event.motion.y < 576 &&  event.motion.y > 544 ){*/
+		
                     towerPosition->x = event.motion.x;
                     towerPosition->y = event.motion.y;
                     *towerPositionning = 1;
 		    printf("ok\n");
+			
 		    
 		/*  }*/
                 break;

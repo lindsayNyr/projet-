@@ -1,7 +1,7 @@
 
 
 
-void HandleEvent(SDL_Event event, int* gameover, SDL_Rect* towerPosition, int *towerPositionning, int* argent, int* cout)
+void HandleEvent(SDL_Event event, int* gameover, SDL_Rect* towerPosition, int *towerPositionning, int *PosX, int *PosY)
 {
 
     switch (event.type) {
@@ -28,13 +28,16 @@ void HandleEvent(SDL_Event event, int* gameover, SDL_Rect* towerPosition, int *t
     
 
                 case SDL_MOUSEBUTTONDOWN:
-		  printf("argent = %d cout = %d \n", *argent, *cout);
-		  if (*argent >= *cout){
-                    towerPosition->x = event.motion.x-20;
-                    towerPosition->y = event.motion.y-20;
+		   
+		 /* if ( event.motion.x < 32 &&  event.motion.x > 0 && event.motion.y < 576 &&  event.motion.y > 544 ){*/
+		
+                    towerPosition->x = event.motion.x;
+                    towerPosition->y = event.motion.y;
                     *towerPositionning = 1;
-		    *argent -= *cout;
-		  }
+		    printf("ok\n");
+			
+		    
+		/*  }*/
                 break;
                
 

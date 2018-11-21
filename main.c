@@ -12,6 +12,9 @@
 #include <SDL/SDL_ttf.h>
 #include "event.h"
 #include "personnages.h"
+#include <math.h>
+#include "attaque.h"
+
 
 
 
@@ -25,14 +28,6 @@
 //Fonction 
 
 
-
-void Attack(struct Tower* tour1 , struct Enemy* mechant, int* argent){
-  
-  if ((tour1->Position.x -3*TAILLE) <= (mechant->Position.x) &&(mechant->Position.x)  <= (tour1->Position.x+3*TAILLE)  && (tour1->Position.y -3*TAILLE) <= (mechant->Position.y) && (mechant->Position.y)<= ( tour1->Position.y+3*TAILLE)){
-    mechant->HP = 0;
-    
-  }
-}
 
 
 
@@ -50,8 +45,8 @@ void Deplacement(struct Enemy* mechant, int copie_map[WIDTH_MAP][HEIGHT_MAP], in
 	    *currentDirection = 1;
 	    copie_map[i][j]=0;
 	    if (*k == 32){
-		*x+=1; 
-		*animFlip = 1 - *animFlip;
+            *x+=1; 
+            *animFlip = 1 - *animFlip;
 	    }
 	}
 	else{
@@ -70,15 +65,15 @@ void Deplacement(struct Enemy* mechant, int copie_map[WIDTH_MAP][HEIGHT_MAP], in
 		    *currentDirection = 3;             
 		    copie_map[i][j]=0;
 		    if (*k == 32){
-			*x-=1;
-			*animFlip = 1 - *animFlip;
+                *x-=1;
+                *animFlip = 1 - *animFlip;
 		    }
 		}
 		else{
 		    if (copie_map[i][j-1]==2){
-			mechant->Position.y -=1;
-			*currentDirection = 0;
-			copie_map[i][j]=0;
+                mechant->Position.y -=1;
+                *currentDirection = 0;
+                copie_map[i][j]=0;
 			if (*k == 32){
 			    *y-=1;
 			    *animFlip = 1 - *animFlip;
@@ -142,27 +137,33 @@ void AfficherMap(SDL_Surface* screen, SDL_Surface* tileset, int table[WIDTH_MAP]
 
 
 
-
-
     
     int main(int argc,char** argv)
 {
     // init variables 
     int map[WIDTH_MAP][HEIGHT_MAP];
-    int i,j, colorkey;
+    int i,j, colorkey, colorkey2, colorkey3;
     int k = 1;
     int towerPositionning = 0;
-    int argent = 20;
 
     int gameover = 0;
     FILE* fichier = NULL;
-    SDL_Surface *screen, *tileset, *tower, *sprite, *temp, *texte = NULL ;
+    SDL_Surface *screen, *tileset, *towerblack, *sprite, *temp, *explosion, *HB, *missile ;
+//     SDL_Rect * ;
     SDL_Event event;
-        TTF_Font *police = NULL;
-SDL_Rect positiontexte;
-    SDL_Color couleurNoire = {0, 0, 0};
+    
+    int towerArray[WIDTH_MAP][HEIGHT_MAP];
+
+int PosX, PosY;
+    
+    
+    
 
 
+	
+
+    
+    
     /* initialize SDL */
     SDL_Init(SDL_INIT_VIDEO); 
 
@@ -184,32 +185,55 @@ SDL_Rect positiontexte;
     int animationFlip = 0;
 
 
-    //load tower
+    //load towers
     
-    temp = SDL_LoadBMP("tower_black.bmp");
-    tower = SDL_DisplayFormat(temp);
+    temp = SDL_LoadBMP("images/tower_black.bmp");
+    towerblack = SDL_DisplayFormat(temp);
     SDL_FreeSurface(temp);
+    
 
+    
     //load sprite
-    temp = SDL_LoadBMP("sprite.bmp");
+    temp = SDL_LoadBMP("images/sprite.bmp");
     sprite = SDL_DisplayFormat(temp);
     SDL_FreeSurface(temp);
 
     //load sprite
-    temp = SDL_LoadBMP("tiles.bmp");
+    temp = SDL_LoadBMP("images/tiles.bmp");
     tileset = SDL_DisplayFormat(temp);
     SDL_FreeSurface(temp);
 
+    
+    //load exposion
+    temp = SDL_LoadBMP("images/explosion.bmp");
+    explosion = SDL_DisplayFormat(temp);
+    SDL_FreeSurface(temp);
 
-
+    // load HealthBar
+    temp = SDL_LoadBMP("images/HB.bmp");
+    HB = SDL_DisplayFormat(temp);
+    SDL_FreeSurface(temp);
+    
+    temp = SDL_LoadBMP("images/missile.bmp");
+    missile = SDL_DisplayFormat(temp);
+    SDL_FreeSurface(temp);  
+    
+    
     /* setup launcher colorkey and turn on RLE */
     colorkey = SDL_MapRGB(screen->format, 255, 0, 255);
-    SDL_SetColorKey(tower, SDL_SRCCOLORKEY | SDL_RLEACCEL, colorkey);
-    SDL_SetColorKey(sprite, SDL_SRCCOLORKEY | SDL_RLEACCEL, colorkey);
-    
-    
-    
+    colorkey2 = SDL_MapRGB(screen->format, 0, 0, 0);
+    colorkey3 = SDL_MapRGB(screen->format, 255,255, 255);
 
+    SDL_SetColorKey(towerblack, SDL_SRCCOLORKEY | SDL_RLEACCEL, colorkey);
+
+    SDL_SetColorKey(sprite, SDL_SRCCOLORKEY | SDL_RLEACCEL, colorkey);
+    SDL_SetColorKey(explosion, SDL_SRCCOLORKEY | SDL_RLEACCEL, colorkey2);
+    SDL_SetColorKey(HB, SDL_SRCCOLORKEY | SDL_RLEACCEL, colorkey3);
+    SDL_SetColorKey(missile, SDL_SRCCOLORKEY | SDL_RLEACCEL, colorkey3);
+
+    
+    
+    
     
     
      /* Rectangle to store the position of the launcher in the window.
@@ -226,10 +250,10 @@ SDL_Rect positiontexte;
 //     spritePosition.y = 0;
 
     
-
+    
     //déclaration d'un ennemi
     struct Enemy mechant;
-    mechant.HP = 10;
+    mechant.HP = 100;
     mechant.vitesse = 1;
     mechant.Position.x = 0;
     mechant.Position.y = 0;
@@ -237,10 +261,14 @@ SDL_Rect positiontexte;
     //declaration d'une tour
     struct Tower tower1;
     tower1.distAttaque = 3;
-    tower1.degats = 1;
-    tower1.cout = 10;
-/*    tower1.Position.x = 0;
-    tower1.Position.x = 0; */  
+    tower1.degats = 15;   //par tile
+    tower1.cout = 0;
+    tower1.Position.x = 10*32;
+    tower1.Position.y = 17*32; 
+    
+
+    
+    
     
    
     if (!tileset){
@@ -252,13 +280,11 @@ SDL_Rect positiontexte;
     }
 
     fichier = fopen("level.txt", "r");
-
         if (fichier != NULL){
     
             for(i=0; i<HEIGHT_MAP; i++){
                 for(j=0; j<WIDTH_MAP; j++){
-
-                     fscanf(fichier,"%d", &map[j][i]);
+                    fscanf(fichier,"%d", &map[j][i]);
                 }
             }
         }
@@ -270,10 +296,26 @@ SDL_Rect positiontexte;
     }
     
     
+    
+          /*init tab */
+     
+         for(j=0; j<WIDTH_MAP; j++){
+
+          for(i=0; i<HEIGHT_MAP; i++){
+		  towerArray[j][i] = 0 ;
+		  
+	    
+		  if ( i == 0  && j == HEIGHT_MAP-1 ){
+		    towerArray[j][i] = 1;
+		    
+		  
+		}
+	 }
+	  
+	  }
+    
     AfficherMap(screen,tileset,map);
  
-     printf("vous avez %d euros \n", argent);
-
 
 
     /* Define the source rectangle for the BlitSurface tower */
@@ -288,77 +330,142 @@ SDL_Rect positiontexte;
     spriteImage.y = 0;
     spriteImage.w = TAILLE;
     spriteImage.h = TAILLE;
-     
+    /* Define the source rectangle for the BlitSurface HB */
+    SDL_Rect HBImage;
+    HBImage.y = 0;
+    HBImage.x = 0;
+    HBImage.w = TAILLE;
+    HBImage.h = TAILLE;   
+//     /* Define the source rectangle for the BlitSurface missile */
+//     SDL_Rect missileImage;
+//     missileImage.y = 0;
+//     missileImage.x = 0;
+//     missileImage.w = TAILLE;
+//     missileImage.h = TAILLE;
+    
+    
+    /* Define the source rectangle for the BlitSurface explosion */
+    SDL_Rect explosionImage;
+    explosionImage.y = 0;
+    explosionImage.x = 0;
+
+    explosionImage.w = TAILLE;
+    explosionImage.h = TAILLE; 
+    
+    
     
 //     int copie_map2[WIDTH_MAP][HEIGHT_MAP];
     int copie_map[WIDTH_MAP][HEIGHT_MAP];
-    for (i=0;i<WIDTH_MAP;i++){
-        for (j=0;j<HEIGHT_MAP;j++){
+    for (i=0;i<=HEIGHT_MAP+1;i++){
+        for (j=0;j<=HEIGHT_MAP+1;j++){
             copie_map[i][j]=map[i][j];
 //             copie_map2[i][j]=map[i][j];
         }
     }
+    
+    
+SDL_Rect HBPosition;
 
+
+    
+    
 
     //tentative de deplacement d'un ennemi
     i = 0;
     j = 0;
-   
+    int l =0;
+    int m = 0;
 
-      TTF_Init();
-       /* Chargement de la police */
 
-    police = TTF_OpenFont("arial.ttf", 65);
+    int estVivant = 1;
+    int cpt=0;
 
-    /* Écriture du texte dans la SDL_Surface texte en mode Blended (optimal) */
 
-    texte = TTF_RenderText_Blended(police, "Salut !", couleurNoire);
-    
-    
+
     while (mechant.Position.x < 20*30 && gameover == 0){
 
-        
+        HBPosition.y = mechant.Position.y - 22;
+        HBPosition.x = mechant.Position.x;
         if (SDL_PollEvent(&event)) {
-            HandleEvent(event, &gameover, &tower1.Position, &towerPositionning, &argent, &tower1.cout);
+            HandleEvent(event, &gameover, &tower1.Position, &towerPositionning, &PosX, &PosY);
         }
-        AfficherMap(screen,tileset,map);
-        Deplacement(&mechant, copie_map, &currentDirection,&animationFlip, &i, &j, &k);
-	Attack(&tower1, &mechant,&argent);
-        spriteImage.x = TAILLE*(2*currentDirection + animationFlip);
         
+        Deplacement(&mechant, copie_map, &currentDirection,&animationFlip, &l, &m, &k);
 
-        SDL_BlitSurface(sprite, &spriteImage, screen, &mechant.Position);
-        if (towerPositionning == 1){
-            SDL_BlitSurface(tower, &towerImage, screen, &tower1.Position);
+        AfficherMap(screen,tileset,map);
+        spriteImage.x = TAILLE*(2*currentDirection + animationFlip);
+        if (mechant.HP>0){
+            SDL_BlitSurface(sprite, &spriteImage, screen, &mechant.Position);
         }
-	        positiontexte.x = 60;
+        
+        
+        
+        
+        
+        if (towerPositionning == 1){
+            towerArray[tower1.Position.y/TAILLE][tower1.Position.x/TAILLE] = 1;
+            towerPositionning = 0;
+        }
+              for (j=0;j< WIDTH_MAP;j++){
+                    for (i=0;i<HEIGHT_MAP;i++){
+                    if ( towerArray[j][i] == 1){
+			      
 
-        positiontexte.y = 370;
+                        tower1.Position.x = i*TAILLE;
+                        tower1.Position.y = j*TAILLE;
+                        SDL_BlitSurface(towerblack, &towerImage, screen, &tower1.Position);  
+			  }
+			}
+		}
+        
+        
+        
+        SDL_BlitSurface(HB, &HBImage, screen, &HBPosition);
+        
+        if (mechant.HP<=0 && estVivant == 1){       //quand un ennemi meurt
+            for (i=0; i<4; i++){
+                for (j=0; j<5; j++){
+                    explosionImage.x = j*TAILLE ;
+                    explosionImage.y = i*TAILLE ;
+                    SDL_BlitSurface(explosion, &explosionImage, screen, &mechant.Position);
+                    SDL_Delay(100);
+                    SDL_BlitSurface(towerblack, &towerImage, screen, &tower1.Position);
 
-        SDL_BlitSurface(texte, NULL, screen, &positiontexte);
-        SDL_Flip(screen);
+                    SDL_UpdateRect(screen,0,0,0,0);
+                    estVivant = 0;
+                }
+            }
+            
+        }
+        SDL_BlitSurface(towerblack, &towerImage, screen, &tower1.Position);
+        
+        if (estAPortee(&tower1, &mechant)&& (mechant.HP >0)){
+            DrawLine(screen, tower1.Position.x,tower1.Position.y, mechant.Position.x, mechant.Position.y, 3000);
+            Attack(&tower1, &mechant, &HBImage, &cpt);
+        }
+
+        
+//         SDL_Flip(screen);
         SDL_UpdateRect(screen,0,0,0,0);
-	printf("il vous reste %d euros \n", argent);
-	
-	
-
     }
 
     
 
 
  /* clean up */
- SDL_FreeSurface(tileset);
- SDL_FreeSurface(sprite);
- SDL_FreeSurface(tower);
- //SDL_FreeSurface(Rect_source);
- //SDL_FreeSurface(Rect_dest);
- SDL_FreeSurface(screen);
+    SDL_FreeSurface(tileset);
+    SDL_FreeSurface(HB);
 
+    SDL_FreeSurface(sprite);
+    SDL_FreeSurface(towerblack);
+    //SDL_FreeSurface(Rect_source);
+    //SDL_FreeSurface(Rect_dest);
+    SDL_FreeSurface(screen);
 
- SDL_Quit();
+    printf("GAMEOVER\n");
+    SDL_Quit();
 
- return 0;
+ return EXIT_SUCCESS;
 
     
  }

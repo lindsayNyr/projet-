@@ -54,6 +54,7 @@ void Deplacement(struct Enemy* mechant, int copie_map[WIDTH_MAP][HEIGHT_MAP], in
                     *animFlip = 1 - *animFlip;
                 }
             }
+
             else{
                 
                 if (copie_map[i-1][j] == 2){
@@ -151,7 +152,8 @@ int main(int argc,char** argv){
     // init variables 
     int i,j, colorkey, colorkey2, colorkey3;
     int k = 1;
-    int towerPositionning = 0;
+    int towerFlagBlack = 0;
+    int towerFlagBlue = 0;
     int gameover = 0;
     FILE* fichier = NULL;
     int currentDirection = 0;  /* Information about the current situation of the sprite: */
@@ -160,13 +162,15 @@ int main(int argc,char** argv){
     int m = 0;
     int estVivant = 1;
     int cpt=0;
+    int click = 0;
+
 
     //init tableau 
     int map[WIDTH_MAP][HEIGHT_MAP];
     int towerArray[WIDTH_MAP][HEIGHT_MAP];
 
     //init SDL
-    SDL_Surface *screen, *tileset, *towerblack, *sprite, *temp, *explosion, *HB, *missile ;
+    SDL_Surface *screen, *tileset, *towerblack, *towerblue, *sprite, *temp, *explosion, *HB, *missile ;
     SDL_Event event;
     
     /* initialize SDL */
@@ -181,6 +185,10 @@ int main(int argc,char** argv){
     //load towers
     temp = SDL_LoadBMP("images/tower_black.bmp");
     towerblack = SDL_DisplayFormat(temp);
+    SDL_FreeSurface(temp);
+
+    temp = SDL_LoadBMP("images/tower_blue.bmp");
+    towerblue = SDL_DisplayFormat(temp);
     SDL_FreeSurface(temp);
     
     //load sprite
@@ -213,6 +221,7 @@ int main(int argc,char** argv){
     colorkey3 = SDL_MapRGB(screen->format, 255,255, 255);
 
     SDL_SetColorKey(towerblack, SDL_SRCCOLORKEY | SDL_RLEACCEL, colorkey);
+    SDL_SetColorKey(towerblue, SDL_SRCCOLORKEY | SDL_RLEACCEL, colorkey);
     SDL_SetColorKey(sprite, SDL_SRCCOLORKEY | SDL_RLEACCEL, colorkey);
     SDL_SetColorKey(explosion, SDL_SRCCOLORKEY | SDL_RLEACCEL, colorkey2);
     SDL_SetColorKey(HB, SDL_SRCCOLORKEY | SDL_RLEACCEL, colorkey3);
@@ -226,16 +235,23 @@ int main(int argc,char** argv){
     mechant.Position.y = 0;
     
     //declaration d'une tour
-    struct Tower tower1;
-    tower1.distAttaque = 3;
-    tower1.degats = 15;   //par tile
-    tower1.cout = 0;
-    tower1.Position.x = 10*32;
-    tower1.Position.y = 17*32; 
+    struct Tower towerBlack;
+    towerBlack.distAttaque = 3;
+    towerBlack.degats = 15;   //par tile
+    towerBlack.cout = 0;
+    towerBlack.Position.x = 10*32;
+    towerBlack.Position.y = 17*32; 
     
 
+    //declaration d'une tour
+    struct Tower towerBlue;
+    towerBlue.distAttaque = 3;
+    towerBlue.degats = 15;   //par tile
+    towerBlue.cout = 0;
+    towerBlue.Position.x = 10*32;
+    towerBlue.Position.y = 17*32; 
     
-    
+
     
    
     if (!tileset){
@@ -276,6 +292,11 @@ int main(int argc,char** argv){
     		   
                 towerArray[j][i] = 1;     
     		}
+            if ( j == 2  && i == HEIGHT_MAP-1 ){
+               
+                towerArray[j][i] = 2;     
+            }
+
 	   }  
 	}
     
@@ -342,7 +363,7 @@ int main(int argc,char** argv){
         
         if (SDL_PollEvent(&event)) {
            
-            HandleEvent(event, &gameover, &tower1.Position, &towerPositionning);
+            HandleEvent(event, &gameover, &towerBlack.Position, &towerBlue.Position, &towerFlagBlack, &towerFlagBlue, &click);
         }
         
         Deplacement(&mechant, copie_map, &currentDirection,&animationFlip, &l, &m, &k);
@@ -356,19 +377,36 @@ int main(int argc,char** argv){
             SDL_BlitSurface(sprite, &spriteImage, screen, &mechant.Position);
         }
         
-        if (towerPositionning == 1){
+        if (towerFlagBlack == 1){
 
-            towerArray[tower1.Position.x/TAILLE][tower1.Position.y/TAILLE] = 1;
-            towerPositionning = 0;
+            towerArray[towerBlack.Position.x/TAILLE][towerBlack.Position.y/TAILLE] = 1;
+            towerFlagBlack = 0;
+        }
+
+        if (towerFlagBlue == 1){
+
+            towerArray[towerBlue.Position.x/TAILLE][towerBlue.Position.y/TAILLE] = 2;
+
+            towerFlagBlue = 0;
         }
        
      
  		for (j=0;j< WIDTH_MAP;j++){
-            for (i=0;i<HEIGHT_MAP-1;i++){
+            for (i=0;i<HEIGHT_MAP;i++){
                 if ( map[j][i] != 1){
 
                     towerArray[j][i] = 0;
                 }
+                  ;    
+            	if ( j == 0  && i == HEIGHT_MAP-1 ){
+    		   
+               	 	towerArray[j][i] = 1;     
+    			}
+    			
+            	if ( j == 2  && i == HEIGHT_MAP-1 ){
+               
+               	 	towerArray[j][i] = 2;     
+           		}
             }
         }
               
@@ -377,10 +415,19 @@ int main(int argc,char** argv){
             for (i=0;i<HEIGHT_MAP;i++){
                 if ( towerArray[j][i] == 1){
 			     
-                    tower1.Position.x = j*TAILLE;
-                    tower1.Position.y = i*TAILLE;
-                    SDL_BlitSurface(towerblack, &towerImage, screen, &tower1.Position);  
+                    towerBlack.Position.x = j*TAILLE;
+                    towerBlack.Position.y = i*TAILLE;
+                    SDL_BlitSurface(towerblack, &towerImage, screen, &towerBlack.Position);  
 			    }
+
+                 if ( towerArray[j][i] == 2){
+                 
+                    towerBlue.Position.x = j*TAILLE;
+                    towerBlue.Position.y = i*TAILLE;
+                    SDL_BlitSurface(towerblue, &towerImage, screen, &towerBlue.Position);  
+                }
+
+
 			}
 		}
         
@@ -394,29 +441,42 @@ int main(int argc,char** argv){
                     explosionImage.y = i*TAILLE ;
                     SDL_BlitSurface(explosion, &explosionImage, screen, &mechant.Position);
                     SDL_Delay(100);
-                    SDL_BlitSurface(towerblack, &towerImage, screen, &tower1.Position);
+                    //SDL_BlitSurface(towerblack, &towerImage, screen, &tower1.Position);
                     SDL_UpdateRect(screen,0,0,0,0);
                     estVivant = 0;
                 }
             }   
         }
 
-        SDL_BlitSurface(towerblack, &towerImage, screen, &tower1.Position);
+        //SDL_BlitSurface(towerblack, &towerImage, screen, &tower1.Position);
 
         for (j=0;j< WIDTH_MAP;j++){
             for (i=0;i<HEIGHT_MAP-1;i++){
                 if ( towerArray[j][i] == 1){
 			      
 
-                    tower1.Position.x = j*TAILLE;
-                    tower1.Position.y = i*TAILLE;
+                    towerBlack.Position.x = j*TAILLE;
+                    towerBlack.Position.y = i*TAILLE;
                       
-                    if (estAPortee(&tower1, &mechant)&& (mechant.HP >0)){
+                    if (estAPortee(&towerBlack, &mechant)&& (mechant.HP >0)){
                     
-                        DrawLine(screen, tower1.Position.x,tower1.Position.y, mechant.Position.x, mechant.Position.y, 3000);
-                        Attack(&tower1, &mechant, &HBImage, &cpt);
+                        DrawLine(screen, towerBlack.Position.x,towerBlack.Position.y, mechant.Position.x, mechant.Position.y, 3000);
+                        Attack(&towerBlack, &mechant, &HBImage, &cpt);
                     }
                 }
+
+
+                if ( towerArray[j][i] == 2){
+                  
+                    towerBlue.Position.x = j*TAILLE;
+                    towerBlue.Position.y = i*TAILLE;
+                      
+                    if (estAPortee(&towerBlue, &mechant)&& (mechant.HP >0)){
+                    
+                        DrawLine(screen, towerBlue.Position.x,towerBlue.Position.y, mechant.Position.x, mechant.Position.y, 3000);
+                        Attack(&towerBlue, &mechant, &HBImage, &cpt);
+                    }
+            	}
             }
         }
  

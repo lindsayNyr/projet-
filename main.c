@@ -12,139 +12,14 @@
 #include <SDL/SDL_ttf.h>
 #include <math.h>
 
+
 #include "event.h"
 #include "structure.h"
 #include "attaque.h"
 #include "define.h"
+#include "menuevent.h"
+#include "fonctions.h"
 
-
-
-//Fonction 
-
-void Deplacement(struct Enemy* mechant, int copie_map[WIDTH_MAP][HEIGHT_MAP], int* currentDirection,int* animFlip, int* x, int* y, int* k){
-    
-    int i = *x;
-    int j = *y;
-
-    SDL_Delay(5);
-  
-    if (mechant->HP > 0){
-        if (copie_map[i+1][j] == 2){
-           
-            mechant->Position.x += 1;
-            *currentDirection = 1;
-            copie_map[i][j] = 0;
-            if (*k == 32){
-               
-                *x+=1; 
-                *animFlip = 1 - *animFlip;
-            }
-        }
-    
-        else{
-
-            if (copie_map[i][j+1] == 2){
-                
-                mechant->Position.y += 1;
-                *currentDirection = 2;         
-                copie_map[i][j] = 0;
-                if (*k == 32){
-                  
-                    *y+=1;
-                    *animFlip = 1 - *animFlip;
-                }
-            }
-
-            else{
-                
-                if (copie_map[i-1][j] == 2){
-                   
-                    mechant->Position.x -= 1;
-                    *currentDirection = 3;             
-                    copie_map[i][j] = 0;
-                    if (*k == 32){
-                      
-                        *x-=1;
-                        *animFlip = 1 - *animFlip;
-                    }
-                }
-            
-                else{
-                    
-                    if (copie_map[i][j-1] == 2){
-                       
-                        mechant->Position.y -= 1;
-                        *currentDirection = 0;
-                        copie_map[i][j] = 0;
-                        if (*k == 32){
-                       
-                            *y-=1;
-                            *animFlip = 1 - *animFlip;
-                        }
-                    }           
-                }
-            }   
-        }
-    
-        *k = *k+1;
-    
-        if (*k == 33){
-       
-            *k = 1;
-        }
-    }
-}
-
-
-
-
-
-
-void AfficherMap(SDL_Surface* screen, SDL_Surface* tileset, int table[WIDTH_MAP][HEIGHT_MAP]){
-   
-    int i,j;
-
-    SDL_Rect Rect_dest;
-    SDL_Rect Rect_source;
-    Rect_source.w = TAILLE;
-    Rect_source.h = TAILLE;
-   
-    for(i=0;i<WIDTH_MAP;i++){
-        
-        for(j=0;j<HEIGHT_MAP;j++){
-    
-            Rect_dest.x = i*TAILLE;
-            Rect_dest.y = j*TAILLE;
-           
-            if (table[i][j] < 10){
-                
-                Rect_source.x = table[i][j]*TAILLE;
-                Rect_source.y = 0;
-            }
-            
-            if (table[i][j] > 10 && table[i][j] < 20){
-                
-                Rect_source.x = (table[i][j]-10)*TAILLE;
-                Rect_source.y = TAILLE;
-            }
-            
-             if (table[i][j] > 20 && table[i][j] < 30){
-                
-                Rect_source.x = (table[i][j]-20)*TAILLE;
-                Rect_source.y = TAILLE*2;
-            }
-             
-            if (table[i][j] > 30 && table[i][j] < 40){
-               
-                Rect_source.x = (table[i][j]-30)*TAILLE;
-                Rect_source.y = TAILLE*3;
-            }
-            
-            SDL_BlitSurface(tileset,&Rect_source,screen,&Rect_dest);
-        }
-    }
-
-}
 
 
 int main(int argc,char** argv){
@@ -155,7 +30,7 @@ int main(int argc,char** argv){
     int towerFlagBlack = 0;
     int towerFlagBlue = 0;
     int gameover = 0;
-    FILE* fichier = NULL;
+    FILE* fichier = NULL, *fichierScore = NULL;
     int currentDirection = 0;  /* Information about the current situation of the sprite: */
     int animationFlip = 0;   /* Information about the animationFlip of the sprite: */
     int l =0;
@@ -163,16 +38,50 @@ int main(int argc,char** argv){
     int estVivant = 1;
     int cpt=0;
     int click = 0;
+    int argent = 50;
+    int nbEnnemisTues = 0;
+    int compteurMenu = 1;
 
 
     //init tableau 
     int map[WIDTH_MAP][HEIGHT_MAP];
     int towerArray[WIDTH_MAP][HEIGHT_MAP];
+    char ArgentArray[20] = ""; /* Tableau de char suffisamment grand */
+
 
     //init SDL
-    SDL_Surface *screen, *tileset, *towerblack, *towerblue, *sprite, *temp, *explosion, *HB, *missile ;
-    SDL_Event event;
+    SDL_Surface *screen, *tileset, *towerblack, *towerblue, *sprite, *temp,
+    		    *explosion, *HB, *missile , *texteArgent, *textePlay, *texteQuit,
+                *menu;
     
+    SDL_Event event;
+    SDL_Event eventMenu; //Initialise un évnènement qui servira à récupérer la saisie au clavier de la touche entrée
+
+    SDL_Color couleurNoire = {0, 0, 0};
+    SDL_Color couleurBlanc = {250, 250,250};
+
+
+    //init TTF
+   	SDL_Init(SDL_INIT_VIDEO);
+    TTF_Init();
+ 
+   /*	if(TTF_Init() == -1)
+	{
+	    fprintf(stderr, "Erreur d'initialisation de TTF_Init : %s\n", TTF_GetError());
+	    exit(EXIT_FAILURE);
+	}*/
+
+	/* Chargement de la police */
+	TTF_Font *policeArgent = NULL;
+	TTF_Font *policeMenu = NULL;
+    policeArgent = TTF_OpenFont("arial.ttf", 50);
+    policeMenu = TTF_OpenFont("arial.ttf", 50);
+
+
+    // init texte ttf
+    sprintf(ArgentArray, "Argent : %d", argent);
+    texteArgent = TTF_RenderText_Blended(policeArgent, ArgentArray, couleurNoire);
+
     /* initialize SDL */
     SDL_Init(SDL_INIT_VIDEO); 
 
@@ -182,8 +91,51 @@ int main(int argc,char** argv){
     /* create window */
     screen = SDL_SetVideoMode(TAILLE*WIDTH_MAP, TAILLE*HEIGHT_MAP, TAILLE, SDL_HWSURFACE|SDL_DOUBLEBUF);
 
+
+    //load menu 
+    temp = SDL_LoadBMP("images/menu.bmp");
+    menu = SDL_DisplayFormat(temp);
+    SDL_FreeSurface(temp);
+
+    //position menu 
+    SDL_Rect MENU;
+    MENU.x = 2.5*TAILLE;
+    MENU.y = 0;
+
+    //position texte menu
+    SDL_Rect positionTextePlay;
+    positionTextePlay.x = 9*TAILLE;
+    positionTextePlay.y = 2*TAILLE;
+    
+    SDL_Rect positionTexteQuit;
+    positionTexteQuit.x = 9*TAILLE;
+    positionTexteQuit.y = 5*TAILLE;
+
+    //initialisation du texte pour le menu 
+    textePlay = TTF_RenderText_Blended(policeMenu, "JOUER", couleurBlanc);  
+    texteQuit = TTF_RenderText_Blended(policeMenu, "QUITTER", couleurBlanc);  
+
+    //blit 
+    SDL_BlitSurface(textePlay, NULL, screen, &positionTextePlay); /* Blit du texte */
+    SDL_BlitSurface(texteQuit, NULL, screen, &positionTexteQuit); /* Blit du texte */
+
+    SDL_UpdateRect(screen,0,0,0,0);
+
+     while(compteurMenu == 1 && gameover == 0){
+        if (SDL_PollEvent(&eventMenu)) {
+            MenuEvent(eventMenu, &compteurMenu, &gameover);
+        }
+    }
+    
+    //clean up menu
+    TTF_CloseFont(policeMenu);
+    SDL_FreeSurface(textePlay);
+    SDL_FreeSurface(texteQuit);
+    SDL_FreeSurface(menu);
+
+    
     //load towers
-    temp = SDL_LoadBMP("images/tower_black.bmp");
+    temp = SDL_LoadBMP("images/tower_red.bmp");
     towerblack = SDL_DisplayFormat(temp);
     SDL_FreeSurface(temp);
 
@@ -220,8 +172,8 @@ int main(int argc,char** argv){
     colorkey2 = SDL_MapRGB(screen->format, 0, 0, 0);
     colorkey3 = SDL_MapRGB(screen->format, 255,255, 255);
 
-    SDL_SetColorKey(towerblack, SDL_SRCCOLORKEY | SDL_RLEACCEL, colorkey);
-    SDL_SetColorKey(towerblue, SDL_SRCCOLORKEY | SDL_RLEACCEL, colorkey);
+    SDL_SetColorKey(towerblack, SDL_SRCCOLORKEY | SDL_RLEACCEL, colorkey2);
+    SDL_SetColorKey(towerblue, SDL_SRCCOLORKEY | SDL_RLEACCEL, colorkey2);
     SDL_SetColorKey(sprite, SDL_SRCCOLORKEY | SDL_RLEACCEL, colorkey);
     SDL_SetColorKey(explosion, SDL_SRCCOLORKEY | SDL_RLEACCEL, colorkey2);
     SDL_SetColorKey(HB, SDL_SRCCOLORKEY | SDL_RLEACCEL, colorkey3);
@@ -301,7 +253,11 @@ int main(int argc,char** argv){
 	}
     
     AfficherMap(screen,tileset,map);
- 
+
+    SDL_Rect positionTexteArgent;
+    positionTexteArgent.x = (WIDTH_MAP-8)*TAILLE;
+    positionTexteArgent.y = (HEIGHT_MAP-2)*TAILLE;
+
     /* Define the source rectangle for the BlitSurface tower */
     SDL_Rect towerImage;
     towerImage.x = 0;
@@ -363,7 +319,7 @@ int main(int argc,char** argv){
         
         if (SDL_PollEvent(&event)) {
            
-            HandleEvent(event, &gameover, &towerBlack.Position, &towerBlue.Position, &towerFlagBlack, &towerFlagBlue, &click);
+            HandleEvent(event, &gameover, &towerBlack.Position, &towerBlue.Position, &towerBlack.cout, &towerBlue.cout, &argent, &towerFlagBlack, &towerFlagBlue, &click);
         }
         
         Deplacement(&mechant, copie_map, &currentDirection,&animationFlip, &l, &m, &k);
@@ -430,6 +386,12 @@ int main(int argc,char** argv){
 
 			}
 		}
+
+	    
+        sprintf(ArgentArray, "argent : %d", argent); /* On écrit dans la chaîne "argent" la nouvelle somme */
+        SDL_FreeSurface(texteArgent); /* On supprime la surface précédente */
+        texteArgent = TTF_RenderText_Blended(policeArgent, ArgentArray, couleurNoire); /* On écrit la chaîne argent dans la SDL_Surface */
+        SDL_BlitSurface(texteArgent, NULL, screen, &positionTexteArgent); /* Blit du texte */
         
         SDL_BlitSurface(HB, &HBImage, screen, &HBPosition);
         
@@ -444,8 +406,12 @@ int main(int argc,char** argv){
                     //SDL_BlitSurface(towerblack, &towerImage, screen, &tower1.Position);
                     SDL_UpdateRect(screen,0,0,0,0);
                     estVivant = 0;
+                    nbEnnemisTues +=1;
+
                 }
-            }   
+            }
+
+            argent += 10;
         }
 
         //SDL_BlitSurface(towerblack, &towerImage, screen, &tower1.Position);
@@ -483,14 +449,39 @@ int main(int argc,char** argv){
         SDL_UpdateRect(screen,0,0,0,0);
     }
 
+    //score
+    
+    fichierScore = fopen("score.txt", "w");
+    
+    if (fichierScore == NULL){
+     
+      perror("Error opening file");
+    }
+
+    else{
+      
+        fprintf (fichierScore , "%d" ,nbEnnemisTues);
+        if (ferror (fichierScore)){
+        
+            printf("erreur ecriture score.txt\n");
+        }
+
+        fclose(fichierScore);
+    }
     
     printf("GAMEOVER\n");
 
     /* clean up */
+    TTF_CloseFont(policeArgent);
+    TTF_Quit();
+
+    SDL_FreeSurface(texteArgent);
     SDL_FreeSurface(tileset);
     SDL_FreeSurface(HB);
     SDL_FreeSurface(sprite);
     SDL_FreeSurface(towerblack);
+    SDL_FreeSurface(towerblue);
+    SDL_FreeSurface(explosion);
     SDL_FreeSurface(screen);
 
     SDL_Quit();

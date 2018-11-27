@@ -1,4 +1,5 @@
 
-#define TAILLE 32  // taille standars
-#define WIDTH_MAP 20  // nombre a afficher en x et y
-#define HEIGHT_MAP 18
+#define TAILLE 32  // taille standard
+#define WIDTH_MAP 25  // nombre a afficher en x et y
+#define HEIGHT_MAP 22
+#define TAILLE_TOWER 40 

@@ -26,39 +26,50 @@ int main(int argc,char** argv){
    
     // init variables 
     int i,j, colorkey, colorkey2, colorkey3;
-    //int k = 1;
+    int k = 1;
     int towerFlagBlack = 0;
     int towerFlagBlue = 0;
     int gameover = 0;
     FILE* fichier = NULL, *fichierScore = NULL;
     int currentDirection = 0;  /* Information about the current situation of the sprite: */
     int animationFlip = 0;   /* Information about the animationFlip of the sprite: */
-    //int l =0;
-    //int m = 0;
+    int l =0;
+    int m = 0;
     int estVivant = 1;
     int cpt=0;
     int click = 0;
     int argent = 50;
     int nbEnnemisTues = 0;
     int compteurMenu = 1;
-    int nbVie = 3;
-    int p =0;
+    int recordActuel;
     int cptEnemy = 5;
-
-
-
-    //init tableau 
+    int p =0;
+    
+    //recuperation du record actuel
+    fichierScore = fopen("score.txt", "r");
+    if (fichierScore == NULL){
+      perror("Error opening file");
+    }
+    else{
+       fscanf(fichierScore, "%d", &recordActuel);
+        if (ferror (fichierScore)){     
+            printf("erreur ecriture score.txt\n");
+        }
+        fclose(fichierScore);
+    }
+    
+    
+   
+    //init tableaux 
     int map[WIDTH_MAP][HEIGHT_MAP];
     int towerArray[WIDTH_MAP][HEIGHT_MAP];
     char ArgentArray[20] = ""; /* Tableau de char suffisamment grand */
+    char ScoreArray[20] = "";
     struct Enemy *EnemyTab = malloc(sizeof(Enemy) * cptEnemy);
-
-
-
     //init SDL
     SDL_Surface *screen, *tileset, *towerblack, *towerblue, *sprite, *temp,
     		    *explosion, *HB, *missile , *texteArgent, *textePlay, *texteQuit,
-                *menu;
+                *menu, *texteScore;
     
     SDL_Event event;
     SDL_Event eventMenu; //Initialise un évnènement qui servira à récupérer la saisie au clavier de la touche entrée
@@ -68,8 +79,8 @@ int main(int argc,char** argv){
 
 
     //init TTF
-   	SDL_Init(SDL_INIT_VIDEO);
-    TTF_Init();
+   SDL_Init(SDL_INIT_VIDEO);
+   TTF_Init();
  
    /*	if(TTF_Init() == -1)
 	{
@@ -78,8 +89,8 @@ int main(int argc,char** argv){
 	}*/
 
 	/* Chargement de la police */
-	TTF_Font *policeArgent = NULL;
-	TTF_Font *policeMenu = NULL;
+    TTF_Font *policeArgent = NULL;
+    TTF_Font *policeMenu = NULL;
     policeArgent = TTF_OpenFont("arial.ttf", 50);
     policeMenu = TTF_OpenFont("arial.ttf", 50);
 
@@ -87,6 +98,9 @@ int main(int argc,char** argv){
     // init texte ttf
     sprintf(ArgentArray, "Argent : %d", argent);
     texteArgent = TTF_RenderText_Blended(policeArgent, ArgentArray, couleurNoire);
+    
+    sprintf(ScoreArray, "Score : %d", recordActuel);
+    
 
     /* initialize SDL */
     SDL_Init(SDL_INIT_VIDEO); 
@@ -105,7 +119,7 @@ int main(int argc,char** argv){
 
     //position menu 
     SDL_Rect MENU;
-    MENU.x = 2.5*TAILLE;
+    MENU.x = 0;
     MENU.y = 0;
 
     //position texte menu
@@ -120,18 +134,31 @@ int main(int argc,char** argv){
     //initialisation du texte pour le menu 
     textePlay = TTF_RenderText_Blended(policeMenu, "JOUER", couleurBlanc);  
     texteQuit = TTF_RenderText_Blended(policeMenu, "QUITTER", couleurBlanc);  
-
+    
+    SDL_BlitSurface(menu, NULL, screen, &MENU); //Colle le menu sur l'écran
     //blit 
     SDL_BlitSurface(textePlay, NULL, screen, &positionTextePlay); /* Blit du texte */
     SDL_BlitSurface(texteQuit, NULL, screen, &positionTexteQuit); /* Blit du texte */
 
+    SDL_Rect positionTexteScore;
+    positionTexteScore.x = (WIDTH_MAP-12)*TAILLE;
+    positionTexteScore.y = (HEIGHT_MAP-2)*TAILLE;
+    
+    sprintf(ScoreArray, "record actuel : %d", recordActuel); /* On écrit dans la chaîne "argent" la nouvelle somme */
+    texteScore = TTF_RenderText_Blended(policeArgent, ScoreArray, couleurNoire); /* On écrit la chaîne argent dans la SDL_Surface */
+    SDL_BlitSurface(texteScore, NULL, screen, &positionTexteScore); /* Blit du texte */    
+    
+    
     SDL_UpdateRect(screen,0,0,0,0);
+    
 
-     while(compteurMenu == 1 && gameover == 0){
-        if (SDL_PollEvent(&eventMenu)) {
-            MenuEvent(eventMenu, &compteurMenu, &gameover);
-        }
+    while(compteurMenu == 1 && gameover == 0){
+       if (SDL_PollEvent(&eventMenu)) {
+          MenuEvent(eventMenu, &compteurMenu, &gameover);
+       }
     }
+    
+    SDL_FreeSurface(texteScore);
     
     //clean up menu
     TTF_CloseFont(policeMenu);
@@ -160,7 +187,7 @@ int main(int argc,char** argv){
     SDL_FreeSurface(temp);
 
     //load exposion
-    temp = SDL_LoadBMP("images/explosion.bmp");
+    temp = SDL_LoadBMP("images/boum.bmp");
     explosion = SDL_DisplayFormat(temp);
     SDL_FreeSurface(temp);
 
@@ -185,22 +212,27 @@ int main(int argc,char** argv){
     SDL_SetColorKey(HB, SDL_SRCCOLORKEY | SDL_RLEACCEL, colorkey3);
     SDL_SetColorKey(missile, SDL_SRCCOLORKEY | SDL_RLEACCEL, colorkey3);
 
-   
+    //déclaration d'un ennemi
+    struct Enemy mechant;
+    mechant.HP = 100;
+    mechant.vitesse = 1;
+    mechant.Position.x = 0;
+    mechant.Position.y = 0;
     
     //declaration d'une tour
     struct Tower towerBlack;
     towerBlack.distAttaque = 3;
     towerBlack.degats = 15;   //par tile
-    towerBlack.cout = 0;
+    towerBlack.cout = 10;
     towerBlack.Position.x = 10*32;
     towerBlack.Position.y = 17*32; 
     
 
     //declaration d'une tour
     struct Tower towerBlue;
-    towerBlue.distAttaque = 3;
-    towerBlue.degats = 15;   //par tile
-    towerBlue.cout = 0;
+    towerBlue.distAttaque = 2;
+    towerBlue.degats = 20;   //par tile
+    towerBlue.cout = 20;
     towerBlue.Position.x = 10*32;
     towerBlue.Position.y = 17*32; 
     
@@ -252,13 +284,27 @@ int main(int argc,char** argv){
 
 	   }  
 	}
-
-
     
     AfficherMap(screen,tileset,map);
-
-
-     //déclaration d'un ennemi
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+         //déclaration d'un ennemi
     for (i=0; i < cptEnemy; i++){
 	    
 	    EnemyTab[i].HP = 100;
@@ -283,6 +329,27 @@ int main(int argc,char** argv){
 		      //  printf("%d %d\n", EnemyTab[0].Position.x, cptEnemy);
 		  
 
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
 
     SDL_Rect positionTexteArgent;
     positionTexteArgent.x = (WIDTH_MAP-8)*TAILLE;
@@ -292,8 +359,8 @@ int main(int argc,char** argv){
     SDL_Rect towerImage;
     towerImage.x = 0;
     towerImage.y = 0;
-    towerImage.w = TAILLE;
-    towerImage.h = TAILLE;
+    towerImage.w = TAILLE_TOWER;
+    towerImage.h = TAILLE_TOWER;
 
     /* Define the source rectangle for the BlitSurface sprite */
     SDL_Rect spriteImage;
@@ -327,7 +394,7 @@ int main(int argc,char** argv){
 
     
     int copie_map[WIDTH_MAP][HEIGHT_MAP];
-    for (i=0;i< WIDTH_MAP ;i++){
+    for (i=0;i<WIDTH_MAP;i++){
         for (j=0;j<HEIGHT_MAP;j++){
            
             copie_map[i][j] = map[i][j];
@@ -341,8 +408,19 @@ int main(int argc,char** argv){
    // j = 0;
     
 
-
-    while (/*nbVie > 0 &&*/ gameover == 0){
+    
+    
+    
+    int cptboucle = 0;
+    
+    
+    
+    
+    
+    
+    
+    
+        while (/*nbVie > 0 &&*/ gameover == 0){
 
 
     	   
@@ -361,26 +439,63 @@ int main(int argc,char** argv){
         /*HBPosition.y = EnemyTab[p].Position.y - 22;
         HBPosition.x = EnemyTab[p].Position.x;*/
         
-        if (SDL_PollEvent(&event)) {
-           
-            HandleEvent(event, &gameover, &towerBlack.Position, &towerBlue.Position, &towerBlack.cout, &towerBlue.cout, &argent, &towerFlagBlack, &towerFlagBlue, &click);
-        }
+//         if (SDL_PollEvent(&event)) {
+//            printf("event ! \n");
+//             HandleEvent(event, &gameover, &towerBlack.Position, &towerBlue.Position, &towerBlack.cout, &towerBlue.cout, &argent, &towerFlagBlack, &towerFlagBlue, &click);
+//         }
 
-       
+      
 
-        for( p = 0 ; p < cptEnemy; p++){
-	  if(p == 0)
-       		Deplacement(EnemyTab, &p,  &currentDirection,&animationFlip);
-		printf("%d\n",  Distance(EnemyTab[p-1].Position.x,  EnemyTab[p-1].Position.y, EnemyTab[p].Position.x,  EnemyTab[p].Position.y));
-	   if( Distance(EnemyTab[p-1].Position.x,  EnemyTab[p-1].Position.y, EnemyTab[p].Position.x,  EnemyTab[p].Position.y) == 32)
-			printf("ok\n");
-	      		Deplacement(EnemyTab, &p,  &currentDirection,&animationFlip);
-	      		
+    for( p = 0 ; p < cptEnemy; p++){
+	  
+			  if(p == 0){
+		       		Deplacement(EnemyTab, &p,  &currentDirection,&animationFlip);
+		       		//printf("0");
+			  }
+			  else{
+		//printf("%d = %d %d\n", p,EnemyTab[p].Position.x,   EnemyTab[p].Position.y);
+		//int d = Distance(EnemyTab[p-1].Position.x,  EnemyTab[p-1].Position.y, EnemyTab[p].Position.x,  EnemyTab[p].Position.y);
+		//printf("distance = %d\n", d);
+			
+				   if( EnemyTab[p-1].Position.x >=32){
+						printf("ok\n");
+						printf("%d = %d %d\n", p, EnemyTab[p].Position.x,   EnemyTab[p].Position.y);
+				      	Deplacement(EnemyTab, &p,  &currentDirection,&animationFlip);
+				      	printf("%d = %d %d\n", p, EnemyTab[p].Position.x,   EnemyTab[p].Position.y);
+					}
+		   	} 
 
-	      	
-	      	
+	    
+
+
+	   		//Deplacement(EnemyTab, &p,  &currentDirection,&animationFlip);
+
+
+	    
+
+	}	
+
+	    	
+
+	   if (SDL_PollEvent(&event)) {
+		//printf("event ! \n");
+		HandleEvent(event, &gameover, &towerBlack.Position, &towerBlue.Position, &towerBlack.cout, &towerBlue.cout, &argent, &towerFlagBlack, &towerFlagBlue, &click);
 	    }
-	    AfficherMap(screen,tileset,map);
+	    
+	    /*
+	    if (((towerBlack.Position.x -towerBlack.distAttaque*TAILLE) <= (EnemyTab[p].Position.x) &&(EnemyTab[p].Position.x)  <= (towerBlack.Position.x+towerBlack.distAttaque*TAILLE)  && (towerBlack.Position.y - towerBlack.distAttaque*TAILLE) <= (EnemyTab[p].Position.y) && (EnemyTab[p].Position.y)<= ( towerBlack.Position.y+towerBlack.distAttaque*TAILLE))){
+	    
+	    
+		Attack(&towerBlue, &mechant, &HBImage, &cpt);
+		DrawLine(screen, towerBlack.Position.x,towerBlack.Position.y, EnemyTab[p].Position.x, EnemyTab[p].Position.y, 3000);
+	      	SDL_UpdateRect(screen,0,0,0,0);
+	    }
+	   }*/
+
+	   	  for( p = 0 ; p < cptEnemy; p++){
+
+	   AfficherMap(screen,tileset,map);
+	   }
 
 
 	    
@@ -388,6 +503,7 @@ int main(int argc,char** argv){
 		    if (EnemyTab[p].HP>0){
 	   
 	    		SDL_BlitSurface(sprite, &spriteImage, screen, &EnemyTab[p].Position);
+// 			SDL_BlitSurface(HB, &HBImage, screen, &EnemyTab[p].Position);
 		    }
 
 
@@ -431,7 +547,46 @@ int main(int argc,char** argv){
 		       // }
 		   // }
 	    //}*/
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
 
+//     while (mechant.Position.x < 20*30 && gameover == 0){
+// 
+//         HBPosition.y = mechant.Position.y - 22;
+//         HBPosition.x = mechant.Position.x;
+//         
+//         if (SDL_PollEvent(&event)) {
+//            
+//             HandleEvent(event, &gameover, &towerBlack.Position, &towerBlue.Position, &towerBlack.cout, &towerBlue.cout, &argent, &towerFlagBlack, &towerFlagBlue, &click);
+//         }
+//         
+//         Deplacement(&mechant, copie_map, &currentDirection,&animationFlip, &l, &m, &k);
+// 
+//         AfficherMap(screen,tileset,map);
+//         
+//         spriteImage.x = TAILLE*(2*currentDirection + animationFlip);
+//         
+//         if (mechant.HP>0){
+//            
+//             SDL_BlitSurface(sprite, &spriteImage, screen, &mechant.Position);
+//         }
         
         if (towerFlagBlack == 1){
 
@@ -472,14 +627,14 @@ int main(int argc,char** argv){
                 if ( towerArray[j][i] == 1){
 			     
                     towerBlack.Position.x = j*TAILLE;
-                    towerBlack.Position.y = i*TAILLE;
+                    towerBlack.Position.y = i*TAILLE-8;
                     SDL_BlitSurface(towerblack, &towerImage, screen, &towerBlack.Position);  
 			    }
 
                  if ( towerArray[j][i] == 2){
                  
                     towerBlue.Position.x = j*TAILLE;
-                    towerBlue.Position.y = i*TAILLE;
+                    towerBlue.Position.y = i*TAILLE-8;
                     SDL_BlitSurface(towerblue, &towerImage, screen, &towerBlue.Position);  
                 }
 
@@ -489,37 +644,35 @@ int main(int argc,char** argv){
 
 	    
         sprintf(ArgentArray, "argent : %d", argent); /* On écrit dans la chaîne "argent" la nouvelle somme */
-        SDL_FreeSurface(texteArgent); /* On supprime la surface précédente */
+
         texteArgent = TTF_RenderText_Blended(policeArgent, ArgentArray, couleurNoire); /* On écrit la chaîne argent dans la SDL_Surface */
         SDL_BlitSurface(texteArgent, NULL, screen, &positionTexteArgent); /* Blit du texte */
         
-        //SDL_BlitSurface(HB, &HBImage, screen, &HBPosition);
-       for( p = 0 ; p < cptEnemy; p++){
-
-        if (EnemyTab[p].HP<=0 ){       //quand un ennemi meurt
-            for (i=0; i<4; i++){
-                for (j=0; j<5; j++){
+//         SDL_BlitSurface(HB, &HBImage, screen, &HBPosition);
+        
+        if (mechant.HP<=0 && estVivant == 1){       //quand un ennemi meurt
+//             for (i=0; i<4; i++){
+                for (j=0; j<4; j++){
                     
                     explosionImage.x = j*TAILLE ;
-                    explosionImage.y = i*TAILLE ;
-                    SDL_BlitSurface(explosion, &explosionImage, screen, &EnemyTab[p].position);
+//                     explosionImage.y = i*TAILLE ;
+                    SDL_BlitSurface(explosion, &explosionImage, screen, &mechant.Position);
                     SDL_Delay(100);
                     //SDL_BlitSurface(towerblack, &towerImage, screen, &tower1.Position);
                     SDL_UpdateRect(screen,0,0,0,0);
-                  
-                    nbEnnemisTues +=1;
+                    estVivant = 0;
+                    
 
                 }
-            }
+                nbEnnemisTues +=1;
+//             }
 
             argent += 10;
         }
-       }
+
         //SDL_BlitSurface(towerblack, &towerImage, screen, &tower1.Position);
 
-      	  for( p = 0 ; p < cptEnemy; p++){
-
-       for (j=0;j< WIDTH_MAP;j++){
+        for (j=0;j< WIDTH_MAP;j++){
             for (i=0;i<HEIGHT_MAP-1;i++){
                 if ( towerArray[j][i] == 1){
 			      
@@ -527,10 +680,10 @@ int main(int argc,char** argv){
                     towerBlack.Position.x = j*TAILLE;
                     towerBlack.Position.y = i*TAILLE;
                       
-                    if (estAPortee(&towerBlack, &EnemyTab[p])&& (EnemyTab[p].HP >0)){
+                    if (estAPortee(&towerBlack, &mechant)&& (mechant.HP >0)){
                     
-                        DrawLine(screen, towerBlack.Position.x,towerBlack.Position.y, EnemyTab[p].Position.x, EnemyTab[p].Position.y, 3000);
-                        Attack(&towerBlack, &EnemyTab[p], &HBImage, &cpt);
+                        DrawLine(screen, towerBlack.Position.x,towerBlack.Position.y, mechant.Position.x, mechant.Position.y, 3000);
+                        Attack(&towerBlack, &mechant, &HBImage, &cpt);
                     }
                 }
 
@@ -540,32 +693,21 @@ int main(int argc,char** argv){
                     towerBlue.Position.x = j*TAILLE;
                     towerBlue.Position.y = i*TAILLE;
                       
-                    if (estAPortee(&towerBlue, &EnemyTab[p])&& (EnemyTab[p].HP >0)){
+                    if (estAPortee(&towerBlue, &mechant)&& (mechant.HP >0)){
                     
-                        DrawLine(screen, towerBlue.Position.x,towerBlue.Position.y, EnemyTab[p].Position.x, EnemyTab[p].Position.y, 3000);
-                        Attack(&towerBlue, &EnemyTab[p], &HBImage, &cpt);
+//                         DrawLine(screen, towerBlue.Position.x,towerBlue.Position.y, mechant.Position.x, mechant.Position.y, 3000);
+//                         Attack(&towerBlue, &mechant, &HBImage, &cpt);
                     }
             	}
             }
         }
-      }
-
-      for( p = 0 ; p < cptEnemy; p++){
-
-        if (EnemyTab[p].Position.x == 20*30){
-
- 			nbVie = nbVie - 1;
-
- 		}
-      }
  
         SDL_UpdateRect(screen,0,0,0,0);
     }
-    
 
     //score
     
-    fichierScore = fopen("score.txt", "w");
+    fichierScore = fopen("score.txt", "w+");
     
     if (fichierScore == NULL){
      
@@ -573,8 +715,13 @@ int main(int argc,char** argv){
     }
 
     else{
-      
+       fscanf(fichierScore, "%d", &recordActuel);
+      if (nbEnnemisTues >= recordActuel){
         fprintf (fichierScore , "%d" ,nbEnnemisTues);
+      }
+      else{
+	fprintf (fichierScore, "%d", recordActuel);
+      }
         if (ferror (fichierScore)){
         
             printf("erreur ecriture score.txt\n");
@@ -583,16 +730,14 @@ int main(int argc,char** argv){
         fclose(fichierScore);
     }
     
+
+    
     printf("GAMEOVER\n");
 
-
-
     /* clean up */
-    free(EnemyTab);
-
     TTF_CloseFont(policeArgent);
     TTF_Quit();
-
+    
     SDL_FreeSurface(texteArgent);
     SDL_FreeSurface(tileset);
     SDL_FreeSurface(HB);

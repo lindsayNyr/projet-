@@ -29,7 +29,7 @@ void HandleEvent(SDL_Event event, int* gameover, SDL_Rect* towerPositionBlack, S
 
         case SDL_MOUSEBUTTONDOWN:
 		   
-		    if ( event.motion.x < 32 &&  event.motion.x > 0 && event.motion.y < 640 &&  event.motion.y > 608 && *click == 0 && *argent >= *towerCoutBlack ){ //tour noir
+		    if ( event.motion.x < 32 &&  event.motion.x > 0 && event.motion.y < 704 &&  event.motion.y > 672 && *click == 0 && *argent >= *towerCoutBlack ){ //tour noir
                 if(event.button.button == SDL_BUTTON_LEFT){
                          
                     *click = 1;    
@@ -47,7 +47,7 @@ void HandleEvent(SDL_Event event, int* gameover, SDL_Rect* towerPositionBlack, S
                 }
                 else{
 
-                    if ( event.motion.x < 3*32 &&  event.motion.x > 2*32 && event.motion.y < 640 &&  event.motion.y > 608 && *click == 0 && *argent >= *towerCoutBlue ){
+                    if ( event.motion.x < 3*32 &&  event.motion.x > 2*32 && event.motion.y < 704 &&  event.motion.y > 672 && *click == 0 && *argent >= *towerCoutBlue ){
                         if(event.button.button == SDL_BUTTON_LEFT){                   
                                 
                             *click = 2;    

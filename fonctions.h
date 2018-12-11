@@ -1,74 +1,75 @@
 //Fonctions 
+ 
 
-void Deplacement(struct Enemy* mechant, int copie_map[WIDTH_MAP][HEIGHT_MAP], int* currentDirection,int* animFlip, int* x, int* y, int* k){
+void Deplacement(struct Enemy* mechent){
     
-    int i = *x;
-    int j = *y;
+    int i = mechent->indiceX;
+    int j = mechent->indiceY;
 
-    SDL_Delay(10);
+
   
-    if (mechant->HP > 0){
-        if (copie_map[i+1][j] == 2){
+    if (mechent->HP > 0){
+        if (mechent->copieMap[i+1][j] == 2){
            
-            mechant->Position.x += 1;
-            *currentDirection = 1;
-            copie_map[i][j] = 0;
-            if (*k == 32){
+            mechent->Position.x += 1;
+            mechent->currentDirection = 1;
+            mechent->copieMap[i][j] = 0;
+            if (mechent->pixel == 32){
                
-                *x+=1; 
-                *animFlip = 1 - *animFlip;
+                mechent->indiceX+=1; 
+                mechent->animFlip = 1 - mechent->animFlip;
             }
         }
     
         else{
 
-            if (copie_map[i][j+1] == 2){
+            if (mechent->copieMap[i][j+1] == 2){
                 
-                mechant->Position.y += 1;
-                *currentDirection = 2;         
-                copie_map[i][j] = 0;
-                if (*k == 32){
+                mechent->Position.y += 1;
+                mechent->currentDirection = 2;         
+                mechent->copieMap[i][j] = 0;
+                if (mechent->pixel == 32){
                   
-                    *y+=1;
-                    *animFlip = 1 - *animFlip;
+                    mechent->indiceY+=1;
+                    mechent->animFlip = 1 - mechent->animFlip;
                 }
             }
             else{
                 
-                if (copie_map[i-1][j] == 2){
+                if (mechent->copieMap[i-1][j] == 2){
                    
-                    mechant->Position.x -= 1;
-                    *currentDirection = 3;             
-                    copie_map[i][j] = 0;
-                    if (*k == 32){
+                    mechent->Position.x -= 1;
+                    mechent->currentDirection = 3;             
+                    mechent->copieMap[i][j] = 0;
+                    if (mechent->pixel == 32){
                       
-                        *x-=1;
-                        *animFlip = 1 - *animFlip;
+                        mechent->indiceX-=1;
+                        mechent->animFlip = 1 - mechent->animFlip;
                     }
                 }
             
                 else{
                     
-                    if (copie_map[i][j-1] == 2){
+                    if (mechent->copieMap[i][j-1] == 2){
                        
-                        mechant->Position.y -= 1;
-                        *currentDirection = 0;
-                        copie_map[i][j] = 0;
-                        if (*k == 32){
+                        mechent->Position.y -= 1;
+                        mechent->currentDirection = 0;
+                        mechent->copieMap[i][j] = 0;
+                        if (mechent->pixel == 32){
                        
-                            *y-=1;
-                            *animFlip = 1 - *animFlip;
+                            mechent->indiceY-=1;
+                            mechent->animFlip = 1 - mechent->animFlip;
                         }
                     }           
                 }
             }   
         }
     
-        *k = *k+1;
+        mechent->pixel = mechent->pixel+1;
     
-        if (*k == 33){
+        if (mechent->pixel == 33){
        
-            *k = 1;
+            mechent->pixel = 1;
         }
     }
 }

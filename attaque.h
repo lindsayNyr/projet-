@@ -19,29 +19,23 @@ int estAPortee(struct Tower* tour, struct Enemy* mechant){
 
 
 //fonction d'attaque
-void Attack(struct Tower* tour , struct Enemy* mechant, SDL_Rect* HBImage, int* cpt){
+void Attack(struct Tower* tour , struct Enemy* mechant){
 
-    if (((tour->Position.x -tour->distAttaque*TAILLE) <= (mechant->Position.x) &&(mechant->Position.x)  <= (tour->Position.x+tour->distAttaque*TAILLE)  && (tour->Position.y - tour->distAttaque*TAILLE) <= (mechant->Position.y) && (mechant->Position.y)<= ( tour->Position.y+tour->distAttaque*TAILLE))&&(mechant->HP >0)&&(*cpt ==32)){
+    if (((tour->Position.x -tour->distAttaque*TAILLE) <= (mechant->Position.x) &&(mechant->Position.x)  <= (tour->Position.x+tour->distAttaque*TAILLE)  && (tour->Position.y - tour->distAttaque*TAILLE) <= (mechant->Position.y) && (mechant->Position.y)<= ( tour->Position.y+tour->distAttaque*TAILLE))&&(mechant->HP >0)){
        
         mechant->HP -= tour->degats;
-        if (HBImage->w >0){
+        if (mechant->HBImage.w >0){
          
-            HBImage->w = 32-(32-( (32*mechant->HP)/100));
+            mechant->HBImage.w = 32-(32-( (32*mechant->HP)/100));
         }
     }
 
     if (mechant->HP < 0){
       
-      HBImage->w = 0;
+      mechant->HBImage.w = 0;
     }
 
-    *cpt +=1;
-    
-    if (*cpt == 33){
-      
-      *cpt = 1;
-    }
- 
+   
     
 }
 

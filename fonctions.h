@@ -5,63 +5,63 @@ int Distance(int x1, int y1, int x2, int y2) {
    return sqrt((y2 - y1)*(y2 - y1) + (x2 - x1)*(y2 - y1));
     } 
 
-void Deplacement(struct Enemy* EnemyTab, int *p, int* currentDirection,int* animFlip){
+void Deplacement(struct Enemy* mechent , int* currentDirection,int* animFlip){
     
-    int i = EnemyTab[*p].indiceX;
-    int j = EnemyTab[*p].indiceY;
+    int i = mechent->indiceX;
+    int j = mechent->indiceY;
 
     SDL_Delay(10);
   
-    if (EnemyTab[*p].HP > 0){
-        if (EnemyTab[*p].copieMap[i+1][j] == 2){
+    if (mechent->HP > 0){
+        if (mechent->copieMap[i+1][j] == 2){
            
-            EnemyTab[*p].Position.x += 1;
+            mechent->Position.x += 1;
             *currentDirection = 1;
-            EnemyTab[*p].copieMap[i][j] = 0;
-            if (EnemyTab[*p].pixel == 32){
+            mechent->copieMap[i][j] = 0;
+            if (mechent->pixel == 32){
                
-                EnemyTab[*p].indiceX+=1; 
+                mechent->indiceX+=1; 
                 *animFlip = 1 - *animFlip;
             }
         }
     
         else{
 
-            if (EnemyTab[*p].copieMap[i][j+1] == 2){
+            if (mechent->copieMap[i][j+1] == 2){
                 
-                EnemyTab[*p].Position.y += 1;
+                mechent->Position.y += 1;
                 *currentDirection = 2;         
-                EnemyTab[*p].copieMap[i][j] = 0;
-                if (EnemyTab[*p].pixel == 32){
+                mechent->copieMap[i][j] = 0;
+                if (mechent->pixel == 32){
                   
-                    EnemyTab[*p].indiceY+=1;
+                    mechent->indiceY+=1;
                     *animFlip = 1 - *animFlip;
                 }
             }
             else{
                 
-                if (EnemyTab[*p].copieMap[i-1][j] == 2){
+                if (mechent->copieMap[i-1][j] == 2){
                    
-                    EnemyTab[*p].Position.x -= 1;
+                    mechent->Position.x -= 1;
                     *currentDirection = 3;             
-                    EnemyTab[*p].copieMap[i][j] = 0;
-                    if (EnemyTab[*p].pixel == 32){
+                    mechent->copieMap[i][j] = 0;
+                    if (mechent->pixel == 32){
                       
-                        EnemyTab[*p].indiceX-=1;
+                        mechent->indiceX-=1;
                         *animFlip = 1 - *animFlip;
                     }
                 }
             
                 else{
                     
-                    if (EnemyTab[*p].copieMap[i][j-1] == 2){
+                    if (mechent->copieMap[i][j-1] == 2){
                        
-                        EnemyTab[*p].Position.y -= 1;
+                        mechent->Position.y -= 1;
                         *currentDirection = 0;
-                        EnemyTab[*p].copieMap[i][j] = 0;
-                        if (EnemyTab[*p].pixel == 32){
+                        mechent->copieMap[i][j] = 0;
+                        if (mechent->pixel == 32){
                        
-                            EnemyTab[*p].indiceY-=1;
+                            mechent->indiceY-=1;
                             *animFlip = 1 - *animFlip;
                         }
                     }           
@@ -69,11 +69,11 @@ void Deplacement(struct Enemy* EnemyTab, int *p, int* currentDirection,int* anim
             }   
         }
     
-        EnemyTab[*p].pixel = EnemyTab[*p].pixel+1;
+        mechent->pixel = mechent->pixel+1;
     
-        if (EnemyTab[*p].pixel == 33){
+        if (mechent->pixel == 33){
        
-            EnemyTab[*p].pixel = 1;
+            mechent->pixel = 1;
         }
     }
 }

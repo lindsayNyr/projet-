@@ -8,8 +8,11 @@ struct Enemy
   int indiceX; //indice map x
   int indiceY; //indice map y 
   int pixel ;
+  int estVivant;
+  SDL_Rect HBImage;
   int copieMap[WIDTH_MAP][HEIGHT_MAP];
   SDL_Rect Position;
+  SDL_Rect HBPosition;
  
 } Enemy;
 

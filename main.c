@@ -29,9 +29,7 @@ int main(int argc,char** argv){
     int towerFlagBlack = 0;
     int towerFlagBlue = 0;
     int gameover = 0;
-    FILE* fichier = NULL, *fichierScore = NULL;
-    int currentDirection = 0;  /* Information about the current situation of the sprite: */
-    int animationFlip = 0;   /* Information about the animationFlip of the sprite: */
+    FILE* fichier = NULL, *fichierScore = NULL;  
     int click = 0;
     int argent = 50;
     int nbEnnemisTues = 0;
@@ -39,6 +37,7 @@ int main(int argc,char** argv){
     int recordActuel;
     int cptEnemy = 5;
     int p =0;
+    int nbVie = 3;
     
     //recuperation du record actuel
     fichierScore = fopen("score.txt", "r");
@@ -145,6 +144,8 @@ int main(int argc,char** argv){
     
     
     SDL_UpdateRect(screen,0,0,0,0);
+
+    int cptDeplacement = 0;
     
 
     while(compteurMenu == 1 && gameover == 0){
@@ -274,6 +275,32 @@ int main(int argc,char** argv){
 	}
     
     AfficherMap(screen,tileset,map);
+
+    SDL_Rect positionDebut;
+    SDL_Rect positionFin;
+        		int prem = 0;
+
+    for(i=0; i<HEIGHT_MAP; i++){
+    	for(j=0; j<WIDTH_MAP; j++){
+        	if(map[j][i] == 2 && prem == 0){
+        		positionDebut.x = j*TAILLE;
+        		positionDebut.y = i*TAILLE;
+        		prem = 1;
+
+
+        	}
+
+        	if(map[j][i] == 2 ){
+        		positionFin.x = j*TAILLE;
+        		positionFin.y = i*TAILLE;
+        	}
+        }
+    }
+
+    printf("x = %d y = %d\n", positionDebut.x, positionDebut.y);
+    printf("x = %d y = %d\n", positionFin.x, positionFin.y);
+
+
     
     //déclaration d'un ennemi
     for (i=0; i < cptEnemy; i++){
@@ -283,18 +310,21 @@ int main(int argc,char** argv){
 	    EnemyTab[i].indiceX = 0;
 	    EnemyTab[i].indiceY = 0;
 	    EnemyTab[i].pixel = 1;
-        EnemyTab[i].estVivant = 1;
+        EnemyTab[i].estVivant = 0;
+        EnemyTab[i].currentDirection = 0;
+        EnemyTab[i].animFlip = 0;
 
 
-	    EnemyTab[i].Position.x = 0;
-	    EnemyTab[i].Position.y = 0;
+
+	    EnemyTab[i].Position.x = positionDebut.x ;
+	    EnemyTab[i].Position.y = positionDebut.y ;
 
         EnemyTab[i].HBPosition.x = 0;
         EnemyTab[i].HBPosition.y = 0;
 
          /* Define the source rectangle for the BlitSurface HB */
-        EnemyTab[i].HBImage.y = 0;
-        EnemyTab[i].HBImage.x = 0;
+        EnemyTab[i].HBImage.y = positionDebut.y;
+        EnemyTab[i].HBImage.x = positionDebut.x ;
         EnemyTab[i].HBImage.w = TAILLE;
         EnemyTab[i].HBImage.h = TAILLE; 
 
@@ -335,17 +365,8 @@ int main(int argc,char** argv){
     explosionImage.w = TAILLE;
     explosionImage.h = TAILLE; 
 
-    SDL_Rect HBPosition;
-    
-    int copie_map[WIDTH_MAP][HEIGHT_MAP];
-    for (i=0;i<WIDTH_MAP;i++){
-        for (j=0;j<HEIGHT_MAP;j++){
-           
-            copie_map[i][j] = map[i][j];
+ 
 
-        }
-    }
-    
     while (gameover == 0){
 
     for(p = 0; p < cptEnemy; p++){
@@ -364,25 +385,43 @@ int main(int argc,char** argv){
       
 
         for( p = 0 ; p < cptEnemy; p++){
-			if(p == 0){
-		       	
-                Deplacement(&EnemyTab[p],   &currentDirection,&animationFlip);
-		       		
-			}
-			else{
-    			if( EnemyTab[p-1].Position.x >=32){
-    					
-    			    Deplacement(&EnemyTab[p],   &currentDirection,&animationFlip);
-    				      	
-    			}
-            }
+			if((EnemyTab[p].Position.x != positionFin.x) || (EnemyTab[p].Position.y != positionFin.y)){
+				if(p == 0){
+			       	
+	                Deplacement(&EnemyTab[p]);
+
+	               
+	                EnemyTab[p].estVivant = 1;
+	            
+	            }
+			       		
+				
+
+				else{
+	    			if( EnemyTab[p-1].Position.x >=32  ){
+	    					
+	    			    Deplacement(&EnemyTab[p]);
+	    			   
+	                EnemyTab[p].estVivant = 1;
+	               
+	            
+	    	
+	    			}
+	            }
+	        }
 		}   
 
 	   AfficherMap(screen,tileset,map);
+
+	   
+
+	
 	
         for( p = 0 ; p < cptEnemy; p++){
-		    if (EnemyTab[p].HP>0){
+		    if (EnemyTab[p].HP>0 && EnemyTab[p].estVivant== 1){
 	   
+	   			spriteImage.x = TAILLE*(2*EnemyTab[p].currentDirection + EnemyTab[p].animFlip);
+	    		
 	    		SDL_BlitSurface(sprite, &spriteImage, screen, &EnemyTab[p].Position);
 		    }
 	    }
@@ -435,7 +474,10 @@ int main(int argc,char** argv){
         
         for(p = 0; p < cptEnemy; p++){
 
-            SDL_BlitSurface(HB, &EnemyTab[p].HBImage, screen, &EnemyTab[p].HBPosition);
+        	if(EnemyTab[p].estVivant == 1){
+
+            	SDL_BlitSurface(HB, &EnemyTab[p].HBImage, screen, &EnemyTab[p].HBPosition);
+        	}
         }
         
         
@@ -445,7 +487,7 @@ int main(int argc,char** argv){
                         
                     explosionImage.x = j*TAILLE ;
                     SDL_BlitSurface(explosion, &explosionImage, screen, &EnemyTab[p].Position);
-                    SDL_Delay(50);
+                    SDL_Delay(15);
                     SDL_UpdateRect(screen,0,0,0,0);
                     EnemyTab[p].estVivant = 0;
                         
@@ -467,7 +509,7 @@ int main(int argc,char** argv){
 	                    towerBlack.Position.y = i*TAILLE;
 	                      
 	                    if (estAPortee(&towerBlack, &EnemyTab[p])){
-	                    	printf("%d = %d\n",p , EnemyTab[p].HP );
+	                    	//printf("%d = %d\n",p , EnemyTab[p].HP );
 	                        DrawLine(screen, towerBlack.Position.x,towerBlack.Position.y, EnemyTab[p].Position.x, EnemyTab[p].Position.y, 3000);
 	                        Attack(&towerBlack, &EnemyTab[p]);
 	                    }
@@ -481,7 +523,7 @@ int main(int argc,char** argv){
 	                    towerBlue.Position.y = i*TAILLE;
 	                      
 	                    if (estAPortee(&towerBlue, &EnemyTab[p]) ){
-	                    	printf("%d = %d\n",p , EnemyTab[p].HP );
+	                    	
 	                         DrawLine(screen, towerBlue.Position.x,towerBlue.Position.y, EnemyTab[p].Position.x, EnemyTab[p].Position.y, 3000);
 	                         Attack(&towerBlue, &EnemyTab[p]);
 	                    }
@@ -489,6 +531,26 @@ int main(int argc,char** argv){
 	            	}
 	            }
 	        }
+        }
+        
+        for(p = 0; p < cptEnemy; p++){
+
+	        if((EnemyTab[p].Position.x == positionFin.x) && (EnemyTab[p].Position.y == positionFin.y)){
+
+	        	nbVie = nbVie - 1;
+	        	EnemyTab[p].estVivant = 0;
+	        	
+	       
+
+	        }
+    	}
+
+    	
+
+        if(nbVie == 0){
+
+        	gameover = 1;
+
         }
  
         SDL_UpdateRect(screen,0,0,0,0);

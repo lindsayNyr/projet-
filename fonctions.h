@@ -1,27 +1,23 @@
 //Fonctions 
-#include "math.h"
+ 
 
-int Distance(int x1, int y1, int x2, int y2) {
-   return sqrt((y2 - y1)*(y2 - y1) + (x2 - x1)*(y2 - y1));
-    } 
-
-void Deplacement(struct Enemy* mechent , int* currentDirection,int* animFlip){
+void Deplacement(struct Enemy* mechent){
     
     int i = mechent->indiceX;
     int j = mechent->indiceY;
 
-    SDL_Delay(10);
+    SDL_Delay(5);
   
     if (mechent->HP > 0){
         if (mechent->copieMap[i+1][j] == 2){
            
             mechent->Position.x += 1;
-            *currentDirection = 1;
+            mechent->currentDirection = 1;
             mechent->copieMap[i][j] = 0;
             if (mechent->pixel == 32){
                
                 mechent->indiceX+=1; 
-                *animFlip = 1 - *animFlip;
+                mechent->animFlip = 1 - mechent->animFlip;
             }
         }
     
@@ -30,12 +26,12 @@ void Deplacement(struct Enemy* mechent , int* currentDirection,int* animFlip){
             if (mechent->copieMap[i][j+1] == 2){
                 
                 mechent->Position.y += 1;
-                *currentDirection = 2;         
+                mechent->currentDirection = 2;         
                 mechent->copieMap[i][j] = 0;
                 if (mechent->pixel == 32){
                   
                     mechent->indiceY+=1;
-                    *animFlip = 1 - *animFlip;
+                    mechent->animFlip = 1 - mechent->animFlip;
                 }
             }
             else{
@@ -43,12 +39,12 @@ void Deplacement(struct Enemy* mechent , int* currentDirection,int* animFlip){
                 if (mechent->copieMap[i-1][j] == 2){
                    
                     mechent->Position.x -= 1;
-                    *currentDirection = 3;             
+                    mechent->currentDirection = 3;             
                     mechent->copieMap[i][j] = 0;
                     if (mechent->pixel == 32){
                       
                         mechent->indiceX-=1;
-                        *animFlip = 1 - *animFlip;
+                        mechent->animFlip = 1 - mechent->animFlip;
                     }
                 }
             
@@ -57,12 +53,12 @@ void Deplacement(struct Enemy* mechent , int* currentDirection,int* animFlip){
                     if (mechent->copieMap[i][j-1] == 2){
                        
                         mechent->Position.y -= 1;
-                        *currentDirection = 0;
+                        mechent->currentDirection = 0;
                         mechent->copieMap[i][j] = 0;
                         if (mechent->pixel == 32){
                        
                             mechent->indiceY-=1;
-                            *animFlip = 1 - *animFlip;
+                            mechent->animFlip = 1 - mechent->animFlip;
                         }
                     }           
                 }

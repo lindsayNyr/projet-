@@ -9,6 +9,8 @@ struct Enemy
   int indiceY; //indice map y 
   int pixel ;
   int estVivant;
+  int currentDirection ; /* Information about the current situation of the sprite: */
+  int animFlip; /* Information about the animationFlip of the sprite: */
   SDL_Rect HBImage;
   int copieMap[WIDTH_MAP][HEIGHT_MAP];
   SDL_Rect Position;

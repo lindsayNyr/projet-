@@ -5,7 +5,7 @@
 //  Created by Lindsay Noyer on 21/10/2018.
 //  Copyright © 2018 Lindsay Noyer. All rights reserved.
 //
-qq#include <stdlib.h>
+#include <stdlib.h>
 #include <stdio.h>
 #include <SDL/SDL.h>
 #include <unistd.h>

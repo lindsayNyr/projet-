@@ -57,6 +57,7 @@ int main(int argc,char** argv){
     
    
     //init tableaux 
+    int towerAttack[WIDTH_MAP][HEIGHT_MAP];
     int map[WIDTH_MAP][HEIGHT_MAP];
     int towerArray[WIDTH_MAP][HEIGHT_MAP];
     char ArgentArray[20] = ""; /* Tableau de char suffisamment grand */
@@ -215,7 +216,6 @@ int main(int argc,char** argv){
     towerBlack.distAttaque = 3;
     towerBlack.degats = 5;   //par pixel
     towerBlack.cout = 10;
-    towerBlack.tourAttaque = 0;
     towerBlack.Position.x = 0;
     towerBlack.Position.y = 0; 
     
@@ -225,7 +225,6 @@ int main(int argc,char** argv){
     towerBlue.distAttaque = 2;
     towerBlue.degats = 10;   //par pixel
     towerBlue.cout = 20;
-    towerBlack.tourAttaque = 0;
     towerBlue.Position.x = 0;
     towerBlue.Position.y = 0; 
     
@@ -261,10 +260,15 @@ int main(int argc,char** argv){
 
     
     /*init tab */
-         
+         for(p = 0; p < cptEnemy; p++){
+	    
+	    EnemyTab[p].HBPosition.y = EnemyTab[p].Position.y - 22;
+	    EnemyTab[p].HBPosition.x = EnemyTab[p].Position.x;
+	}
     for(j=0; j<WIDTH_MAP; j++){
         for(i=0; i<HEIGHT_MAP; i++){
     		  
+    		towerAttack[j][i] = 0 ;
             towerArray[j][i] = 0 ;    
             if ( j == 0  && i == HEIGHT_MAP-1 ){
     		   
@@ -316,15 +320,15 @@ int main(int argc,char** argv){
 	    }
 	}
 
-	printf("x = %d y = %d\n", positionDebut.x, positionDebut.y);
-	printf("x = %d y = %d\n", positionFin.x, positionFin.y);
+	//printf("x = %d y = %d\n", positionDebut.x, positionDebut.y);
+	//printf("x = %d y = %d\n", positionFin.x, positionFin.y);
 
 
 	
 	//déclaration d'un ennemi
 	for (i=0; i < cptEnemy; i++){
 		
-		EnemyTab[i].HP = 1000;
+		EnemyTab[i].HP = 1000*y;
 		EnemyTab[i].vitesse = 1;
 		EnemyTab[i].indiceX = 0;
 		EnemyTab[i].indiceY = 0;
@@ -351,12 +355,11 @@ int main(int argc,char** argv){
 		    for(j=0; j<WIDTH_MAP; j++){
 
 	      
-		    EnemyTab[i].copieMap[j][p] = map[j][p];
+                EnemyTab[i].copieMap[j][p] = map[j][p];
 		    
 		    }
 		}	    
-	    }
-			    
+    }
 
 	SDL_Rect positionTexteArgent;
 	positionTexteArgent.x = (WIDTH_MAP-8)*TAILLE;
@@ -389,48 +392,35 @@ int main(int argc,char** argv){
 	while (gameover == 0 && finVague == 0){
 
 
-	for(p = 0; p < cptEnemy; p++){
+        for(p = 0; p < cptEnemy; p++){
+            
+            EnemyTab[p].HBPosition.y = EnemyTab[p].Position.y - 22;
+            EnemyTab[p].HBPosition.x = EnemyTab[p].Position.x;
+        }
 	    
-	    EnemyTab[p].HBPosition.y = EnemyTab[p].Position.y - 22;
-	    EnemyTab[p].HBPosition.x = EnemyTab[p].Position.x;
-	}
-	    
-
-
-	      if (SDL_PollEvent(&event)) {
-	    
-		      HandleEvent(event, &gameover, &towerBlack.Position, &towerBlue.Position, &towerBlack.cout, &towerBlue.cout, &argent, &towerFlagBlack, &towerFlagBlue, &click);
+        if (SDL_PollEvent(&event)) {
+            HandleEvent(event, &gameover, &towerBlack.Position, &towerBlue.Position, &towerBlack.cout, &towerBlue.cout, &argent, &towerFlagBlack, &towerFlagBlue, &click, map);
 		}
-
-	  
-
+	  SDL_Delay(5);
 	    for( p = 0 ; p < cptEnemy; p++){
 			    if((EnemyTab[p].Position.x != positionFin.x) || (EnemyTab[p].Position.y != positionFin.y)){
 				    if(p == 0){
-				    
-			    Deplacement(&EnemyTab[p]);
-
-			  if (EnemyTab[p].Position.x == 1){
-			    EnemyTab[p].estVivant = 1;
-		      }
-			}
+                        Deplacement(&EnemyTab[p]);
+                        if (EnemyTab[p].Position.x == positionDebut.x + 1){
+                            EnemyTab[p].estVivant = 1;
+                        }
+                    }
 					    
-				    
-
 				    else{
-				    if( EnemyTab[p-1].Position.x >=32  ){
-						    
-					Deplacement(&EnemyTab[p]);
-				      
-			  if (EnemyTab[p].Position.x == 1){
-			    EnemyTab[p].estVivant = 1;
-		      }
-			
-			}
-				    
-			}
+                        if( EnemyTab[p-1].Position.x >=32  ){
+                            Deplacement(&EnemyTab[p]);
+                            if (EnemyTab[p].Position.x == positionDebut.x + 1){
+                                EnemyTab[p].estVivant = 1;
+                            }
+                        }
+                    }
 		    }
-		    }   
+        }   
 
 	      AfficherMap(screen,tileset,map);
 
@@ -445,44 +435,40 @@ int main(int argc,char** argv){
 		}
 
 		if (towerFlagBlack == 1){
-
-		towerArray[towerBlack.Position.x/TAILLE][towerBlack.Position.y/TAILLE] = 1;
-		towerFlagBlack = 0;
+            towerArray[towerBlack.Position.x/TAILLE][towerBlack.Position.y/TAILLE] = 1;
+            towerFlagBlack = 0;
 	    }
 
 	    if (towerFlagBlue == 1){
-
-		towerArray[towerBlue.Position.x/TAILLE][towerBlue.Position.y/TAILLE] = 2;
-		towerFlagBlue = 0;
+            towerArray[towerBlue.Position.x/TAILLE][towerBlue.Position.y/TAILLE] = 2;
+            towerFlagBlue = 0;
 	    }
 	  
-		    for (j=0;j< WIDTH_MAP;j++){
-		for (i=0;i<HEIGHT_MAP-2;i++){
-		    if ( map[j][i] != 1){
-
-			towerArray[j][i] = 0;
-		    }     	
-		}
+        for (j=0;j< WIDTH_MAP;j++){
+            for (i=0;i<HEIGHT_MAP-2;i++){
+                if ( map[j][i] != 1){
+                    towerArray[j][i] = 0;
+                }     	
+            }
 	    }
 	  
-    
+	  
+	  
 	    for (j=0;j< WIDTH_MAP;j++){
-		for (i=0;i<HEIGHT_MAP;i++){
-		    if ( towerArray[j][i] == 1){
-				
-			towerBlack.Position.x = j*TAILLE;
-			towerBlack.Position.y = i*TAILLE-8;
-			SDL_BlitSurface(towerblack, &towerImage, screen, &towerBlack.Position);  
-				}
-
-		    if ( towerArray[j][i] == 2){
-		    
-			towerBlue.Position.x = j*TAILLE;
-			towerBlue.Position.y = i*TAILLE-8;
-			SDL_BlitSurface(towerblue, &towerImage, screen, &towerBlue.Position);  
-		    }
-			    }
-		    }		
+            for (i=0;i<HEIGHT_MAP;i++){
+                if ( towerArray[j][i] == 1){
+                    
+                    towerBlack.Position.x = j*TAILLE;
+                    towerBlack.Position.y = i*TAILLE-8;
+                    SDL_BlitSurface(towerblack, &towerImage, screen, &towerBlack.Position);  
+                }
+                if ( towerArray[j][i] == 2){
+                    towerBlue.Position.x = j*TAILLE;
+                    towerBlue.Position.y = i*TAILLE-8;
+                    SDL_BlitSurface(towerblue, &towerImage, screen, &towerBlue.Position);  
+                }
+            }
+        }		
 	    sprintf(ArgentArray, "argent : %d", argent); /* On écrit dans la chaîne "argent" la nouvelle somme */
 	    texteArgent = TTF_RenderText_Blended(policeArgent, ArgentArray, couleurNoire); /* On écrit la chaîne argent dans la SDL_Surface */
 	    SDL_BlitSurface(texteArgent, NULL, screen, &positionTexteArgent); /* Blit du texte */ 
@@ -490,7 +476,6 @@ int main(int argc,char** argv){
 	    for(p = 0; p < cptEnemy; p++){
 
 		    if(EnemyTab[p].estVivant == 1){
-
 		    SDL_BlitSurface(HB, &EnemyTab[p].HBImage, screen, &EnemyTab[p].HBPosition);
 		    }
 	    }
@@ -516,43 +501,33 @@ int main(int argc,char** argv){
 			  
 	    for(p=0; p<cptEnemy; p++){
 	      
-		    for (j=0;j< WIDTH_MAP;j++){
-			for (i=0;i<HEIGHT_MAP-1;i++){
-
-			  
-			    if ( towerArray[j][i] == 1){
-
-
-				towerBlack.Position.x = j*TAILLE;
-				towerBlack.Position.y = i*TAILLE;
-
-				
-					 
-				  if (towerBlack.tourAttaque == 0){
-					if (estAPortee(&towerBlack, &EnemyTab[p])){
-
-					      DrawLine(screen, towerBlack.Position.x,towerBlack.Position.y, EnemyTab[p].Position.x, EnemyTab[p].Position.y, 3000);
-					      Attack(&towerBlack, &EnemyTab[p]);
-					}
-				}			 
-			    }
-
-
-			    if ( towerArray[j][i] == 2){
-			      
-				towerBlue.Position.x = j*TAILLE;
-				towerBlue.Position.y = i*TAILLE;
-				  if (towerBlue.tourAttaque == 0){
-				if (estAPortee(&towerBlue, &EnemyTab[p]) ){
-				    
-				    DrawLine(screen, towerBlue.Position.x,towerBlue.Position.y, EnemyTab[p].Position.x, EnemyTab[p].Position.y, 3000);
-				    Attack(&towerBlue, &EnemyTab[p]);
-				}
-				}
-		      
-			    }
-			    
-			}
+		    for (int j=0;j< WIDTH_MAP;j++){
+                for (int i=0;i<HEIGHT_MAP-1;i++){
+                
+                    if ( towerArray[j][i] == 1){
+                        towerBlack.Position.x = j*TAILLE;
+                        towerBlack.Position.y = i*TAILLE;
+                        
+                            
+                        if (towerAttack[j][i] == 0){
+                            if (estAPortee(&towerBlack, &EnemyTab[p], &towerAttack[j][i])){
+                                DrawLine(screen, towerBlack.Position.x,towerBlack.Position.y, EnemyTab[p].Position.x, EnemyTab[p].Position.y, 3000);
+                                Attack(&towerBlack, &EnemyTab[p], y);
+                            }
+                        }			 
+                    }
+                    
+                    if ( towerArray[j][i] == 2){
+                        towerBlue.Position.x = j*TAILLE;
+                        towerBlue.Position.y = i*TAILLE;
+                        if (towerAttack[j][i] == 0){
+                            if (estAPortee(&towerBlue, &EnemyTab[p], &towerAttack[j][i]) ){
+                                DrawLine(screen, towerBlue.Position.x,towerBlue.Position.y, EnemyTab[p].Position.x, EnemyTab[p].Position.y, 3000);
+                                Attack(&towerBlue, &EnemyTab[p], y);
+                            }
+                        }
+                    }
+                }
 		    }
 		    
 	    }
@@ -581,15 +556,17 @@ int main(int argc,char** argv){
 	    
 	}
 	    
-	    SDL_Delay(10);
+	    SDL_Delay(5);
 
-	    
-	  towerBlack.tourAttaque=0;  
-	  towerBlue.tourAttaque=0;  
-	    
-	    
-	    
-	    
+	  
+	    for (int j=0;j< WIDTH_MAP;j++){
+			for (int i=0;i<HEIGHT_MAP;i++){
+				towerAttack[j][i] = 0;
+
+			}
+		}
+
+
 	    
 	}
     }

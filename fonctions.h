@@ -6,7 +6,7 @@ void Deplacement(struct Enemy* mechent){
     int i = mechent->indiceX;
     int j = mechent->indiceY;
 
-    SDL_Delay(5);
+
   
     if (mechent->HP > 0){
         if (mechent->copieMap[i+1][j] == 2){

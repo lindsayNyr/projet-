@@ -6,8 +6,10 @@
 int estAPortee(struct Tower* tour, struct Enemy* mechant){
     
     if (((tour->Position.x -tour->distAttaque*TAILLE) <= (mechant->Position.x) &&(mechant->Position.x)  <= (tour->Position.x+tour->distAttaque*TAILLE)  && (tour->Position.y - tour->distAttaque*TAILLE) <= (mechant->Position.y) && (mechant->Position.y)<= ( tour->Position.y+tour->distAttaque*TAILLE))&&(mechant->HP >0)){
-       
+
+       tour->tourAttaque = 1;
         return 1;
+	
     }
     
     else{
@@ -26,7 +28,7 @@ void Attack(struct Tower* tour , struct Enemy* mechant){
         mechant->HP -= tour->degats;
         if (mechant->HBImage.w >0){
          
-            mechant->HBImage.w = 32-(32-( (32*mechant->HP)/100));
+            mechant->HBImage.w = 32-(32-( (32*mechant->HP)/1000));
         }
     }
 

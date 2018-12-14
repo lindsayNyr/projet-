@@ -18,56 +18,50 @@
 #include "attaque.h"
 #include "define.h"
 #include "menuevent.h"
-#include "fonctions.h"
+
+#include "move.h"
+
+#include "map.h"
+#include "score.h"
+#include "tower.h"
+#include "enemy.h"
 
 
 
 int main(int argc,char** argv){
    
+    
+  
+  
     // init variables 
-    int i,j, colorkey, colorkey2, colorkey3;
-    int towerFlagBlack = 0;
-    int towerFlagBlue = 0;
-    int gameover = 0;
-    FILE* fichier = NULL, *fichierScore = NULL;  
-    int click = 0;
-    int argent = 50;
-    int nbEnnemisTues = 0;
-    int compteurMenu = 1;
-    int recordActuel;
-    int cptEnemy = 2;
-    int p =0;
-    int nbVie = 3;
-    int nbVagues = 10;
-    int vague = 1;
+    FILE *fichierScore = NULL;
+    
+    int y,z,  colorkey, colorkey2, colorkey3;
+    
+    int towerFlagBlack = 0 , towerFlagBlue = 0, gameover = 0, click = 0, recordActuel = 0, 
+        nbEnnemisTues = 0, p = 0, finVague = 0, prem = 0 ; 
+    
+    int argent = 50, compteurMenu = 1, cptEnemy = 2, nbVie = 10, nbVagues = 3;
+    
 
-    //recuperation du record actuel
-    fichierScore = fopen("score.txt", "r");
-    if (fichierScore == NULL){
-      perror("Error opening file");
-    }
-    else{
-       fscanf(fichierScore, "%d", &recordActuel);
-        if (ferror (fichierScore)){     
-            printf("erreur ecriture score.txt\n");
-        }
-        fclose(fichierScore);
-    }
-    
-    
-   
+
+ 
+    recordActuel = recupScore(fichierScore, recordActuel);
+
     //init tableaux 
     int towerAttack[WIDTH_MAP][HEIGHT_MAP];
     int map[WIDTH_MAP][HEIGHT_MAP];
     int towerArray[WIDTH_MAP][HEIGHT_MAP];
     char ArgentArray[20] = ""; /* Tableau de char suffisamment grand */
+    char VieArray[20] = "";
     char ScoreArray[20] = "";
+    char vagueArray[20] = "";
     struct Enemy *EnemyTab = malloc(sizeof(Enemy) * cptEnemy);
    
     //init SDL
     SDL_Surface *screen, *tileset, *towerblack, *towerblue, *sprite, *temp,
     		    *explosion, *HB, *missile , *texteArgent, *textePlay, *texteQuit,
-                *menu, *texteScore;
+                *menu, *texteScore, *texteVie, *texteVague;
     
     SDL_Event event;
     SDL_Event eventMenu; //Initialise un évnènement qui servira à récupérer la saisie au clavier de la touche entrée
@@ -97,6 +91,8 @@ int main(int argc,char** argv){
     sprintf(ArgentArray, "Argent : %d", argent);
     texteArgent = TTF_RenderText_Blended(policeArgent, ArgentArray, couleurNoire);
     sprintf(ScoreArray, "Score : %d", recordActuel);
+    
+    
     
 
     /* initialize SDL */
@@ -148,7 +144,7 @@ int main(int argc,char** argv){
     
     SDL_UpdateRect(screen,0,0,0,0);
 
-    int cptDeplacement = 0;
+  
     
 
     while(compteurMenu == 1 && gameover == 0){
@@ -211,393 +207,137 @@ int main(int argc,char** argv){
     SDL_SetColorKey(HB, SDL_SRCCOLORKEY | SDL_RLEACCEL, colorkey3);
     SDL_SetColorKey(missile, SDL_SRCCOLORKEY | SDL_RLEACCEL, colorkey3);
 
-    //declaration d'une tour
-    struct Tower towerBlack;
-    towerBlack.distAttaque = 3;
-    towerBlack.degats = 5;   //par pixel
-    towerBlack.cout = 10;
-    towerBlack.Position.x = 0;
-    towerBlack.Position.y = 0; 
-    
-
-    //declaration d'une tour
-    struct Tower towerBlue;
-    towerBlue.distAttaque = 2;
-    towerBlue.degats = 10;   //par pixel
-    towerBlue.cout = 20;
-    towerBlue.Position.x = 0;
-    towerBlue.Position.y = 0; 
-    
-
-    
-   
-    if (!tileset){
-       
-        printf("Echec de chargement tileset.bmp\n");
-        SDL_Quit();
-        system("pause");
-        exit(-1);
-    }
-
-    fichier = fopen("level.txt", "r");
-        
-    if (fichier != NULL){
-    
-        for(i=0; i<HEIGHT_MAP; i++){
-            for(j=0; j<WIDTH_MAP; j++){
-                   
-                fscanf(fichier,"%d", &map[j][i]);
-            }
-        }
-    }
-
-    else {
-         
-        // On affiche un message d'erreur si on veut
-        printf("Impossible d'ouvrir le fichier level.txt");
-        
-    }
-
-    
-    /*init tab */
-         for(p = 0; p < cptEnemy; p++){
-	    
-	    EnemyTab[p].HBPosition.y = EnemyTab[p].Position.y - 22;
-	    EnemyTab[p].HBPosition.x = EnemyTab[p].Position.x;
-	}
-    for(j=0; j<WIDTH_MAP; j++){
-        for(i=0; i<HEIGHT_MAP; i++){
-    		  
-    		towerAttack[j][i] = 0 ;
-            towerArray[j][i] = 0 ;    
-            if ( j == 0  && i == HEIGHT_MAP-1 ){
-    		   
-                towerArray[j][i] = 1;     
-    		}
-            if ( j == 2  && i == HEIGHT_MAP-1 ){
-               
-                towerArray[j][i] = 2;     
-            }
-
-	   }  
-	}
-    
-    
-    
-    
-    
-    
-    int finVague = 0;
-    int y;
-    for (y=0; y < nbVagues; y++){
-	    finVague = 0;
-	    cptEnemy = cptEnemy+2;
-	    EnemyTab = malloc(sizeof(Enemy) * cptEnemy);
-	
-	
-
-	
-	AfficherMap(screen,tileset,map);
-
-	SDL_Rect positionDebut;
-	SDL_Rect positionFin;
-			    int prem = 0;
-
-	for(i=0; i<HEIGHT_MAP; i++){
-	    for(j=0; j<WIDTH_MAP; j++){
-		    if(map[j][i] == 2 && prem == 0){
-			    positionDebut.x = j*TAILLE;
-			    positionDebut.y = i*TAILLE;
-			    prem = 1;
-
-
-		    }
-
-		    if(map[j][i] == 2 ){
-			    positionFin.x = j*TAILLE;
-			    positionFin.y = i*TAILLE;
-		    }
-	    }
-	}
-
-	//printf("x = %d y = %d\n", positionDebut.x, positionDebut.y);
-	//printf("x = %d y = %d\n", positionFin.x, positionFin.y);
-
-
-	
-	//déclaration d'un ennemi
-	for (i=0; i < cptEnemy; i++){
-		
-		EnemyTab[i].HP = 1000*y;
-		EnemyTab[i].vitesse = 1;
-		EnemyTab[i].indiceX = 0;
-		EnemyTab[i].indiceY = 0;
-		EnemyTab[i].pixel = 1;
-	    EnemyTab[i].estVivant = 0;
-	    EnemyTab[i].currentDirection = 0;
-	    EnemyTab[i].animFlip = 0;
-
-
-
-		EnemyTab[i].Position.x = positionDebut.x ;
-		EnemyTab[i].Position.y = positionDebut.y ;
-
-	    EnemyTab[i].HBPosition.x = 0;
-	    EnemyTab[i].HBPosition.y = 0;
-
-	    /* Define the source rectangle for the BlitSurface HB */
-	    EnemyTab[i].HBImage.y = positionDebut.y;
-	    EnemyTab[i].HBImage.x = positionDebut.x ;
-	    EnemyTab[i].HBImage.w = TAILLE;
-	    EnemyTab[i].HBImage.h = TAILLE; 
-
-		for (p=0;p<HEIGHT_MAP;p++){
-		    for(j=0; j<WIDTH_MAP; j++){
-
-	      
-                EnemyTab[i].copieMap[j][p] = map[j][p];
-		    
-		    }
-		}	    
-    }
-
-	SDL_Rect positionTexteArgent;
-	positionTexteArgent.x = (WIDTH_MAP-8)*TAILLE;
-	positionTexteArgent.y = (HEIGHT_MAP-2)*TAILLE;
-
-	/* Define the source rectangle for the BlitSurface tower */
-	SDL_Rect towerImage;
-	towerImage.x = 0;
-	towerImage.y = 0;
-	towerImage.w = TAILLE_TOWER;
-	towerImage.h = TAILLE_TOWER;
-
-	/* Define the source rectangle for the BlitSurface sprite */
-	SDL_Rect spriteImage;
-	spriteImage.y = 0;
-	spriteImage.w = TAILLE;
-	spriteImage.h = TAILLE;
-
-	
-    
-	/* Define the source rectangle for the BlitSurface explosion */
-	SDL_Rect explosionImage;
-	explosionImage.y = 0;
-	explosionImage.x = 0;
-	explosionImage.w = TAILLE;
-	explosionImage.h = TAILLE; 
-
-    
-
-	while (gameover == 0 && finVague == 0){
-
-
-        for(p = 0; p < cptEnemy; p++){
-            
-            EnemyTab[p].HBPosition.y = EnemyTab[p].Position.y - 22;
-            EnemyTab[p].HBPosition.x = EnemyTab[p].Position.x;
-        }
-	    
-        if (SDL_PollEvent(&event)) {
-            HandleEvent(event, &gameover, &towerBlack.Position, &towerBlue.Position, &towerBlack.cout, &towerBlue.cout, &argent, &towerFlagBlack, &towerFlagBlue, &click, map);
-		}
-	  SDL_Delay(5);
-	    for( p = 0 ; p < cptEnemy; p++){
-			    if((EnemyTab[p].Position.x != positionFin.x) || (EnemyTab[p].Position.y != positionFin.y)){
-				    if(p == 0){
-                        Deplacement(&EnemyTab[p]);
-                        if (EnemyTab[p].Position.x == positionDebut.x + 1){
-                            EnemyTab[p].estVivant = 1;
-                        }
-                    }
-					    
-				    else{
-                        if( EnemyTab[p-1].Position.x >=32  ){
-                            Deplacement(&EnemyTab[p]);
-                            if (EnemyTab[p].Position.x == positionDebut.x + 1){
-                                EnemyTab[p].estVivant = 1;
-                            }
-                        }
-                    }
-		    }
-        }   
-
-	      AfficherMap(screen,tileset,map);
-
   
-	    for( p = 0 ; p < cptEnemy; p++){
-			if (EnemyTab[p].HP>0 && EnemyTab[p].estVivant== 1){
-	      
-				    spriteImage.x = TAILLE*(2*EnemyTab[p].currentDirection + EnemyTab[p].animFlip);
-			    
-			    SDL_BlitSurface(sprite, &spriteImage, screen, &EnemyTab[p].Position);
-			}
-		}
-
-		if (towerFlagBlack == 1){
-            towerArray[towerBlack.Position.x/TAILLE][towerBlack.Position.y/TAILLE] = 1;
-            towerFlagBlack = 0;
-	    }
-
-	    if (towerFlagBlue == 1){
-            towerArray[towerBlue.Position.x/TAILLE][towerBlue.Position.y/TAILLE] = 2;
-            towerFlagBlue = 0;
-	    }
-	  
-        for (j=0;j< WIDTH_MAP;j++){
-            for (i=0;i<HEIGHT_MAP-2;i++){
-                if ( map[j][i] != 1){
-                    towerArray[j][i] = 0;
-                }     	
-            }
-	    }
-	  
-	  
-	  
-	    for (j=0;j< WIDTH_MAP;j++){
-            for (i=0;i<HEIGHT_MAP;i++){
-                if ( towerArray[j][i] == 1){
-                    
-                    towerBlack.Position.x = j*TAILLE;
-                    towerBlack.Position.y = i*TAILLE-8;
-                    SDL_BlitSurface(towerblack, &towerImage, screen, &towerBlack.Position);  
-                }
-                if ( towerArray[j][i] == 2){
-                    towerBlue.Position.x = j*TAILLE;
-                    towerBlue.Position.y = i*TAILLE-8;
-                    SDL_BlitSurface(towerblue, &towerImage, screen, &towerBlue.Position);  
-                }
-            }
-        }		
-	    sprintf(ArgentArray, "argent : %d", argent); /* On écrit dans la chaîne "argent" la nouvelle somme */
-	    texteArgent = TTF_RenderText_Blended(policeArgent, ArgentArray, couleurNoire); /* On écrit la chaîne argent dans la SDL_Surface */
-	    SDL_BlitSurface(texteArgent, NULL, screen, &positionTexteArgent); /* Blit du texte */ 
-	    
-	    for(p = 0; p < cptEnemy; p++){
-
-		    if(EnemyTab[p].estVivant == 1){
-		    SDL_BlitSurface(HB, &EnemyTab[p].HBImage, screen, &EnemyTab[p].HBPosition);
-		    }
-	    }
-	    
-	    
-	    for( p = 0 ; p < cptEnemy; p++){
-		if (EnemyTab[p].HP <= 0 && EnemyTab[p].estVivant == 1){       //quand un ennemi meurt
-		    for (j=0; j<4; j++){ // 4 nb image sprite explosion 
-			    
-			explosionImage.x = j*TAILLE ;
-			SDL_BlitSurface(explosion, &explosionImage, screen, &EnemyTab[p].Position);
-    //                     SDL_Delay(5);
-			SDL_UpdateRect(screen,0,0,0,0);
-			EnemyTab[p].estVivant = 0;
-			    
-		    }
-		    nbEnnemisTues +=1;
-		    argent += 10;
-		}
-	    } 
-
-			  
-			  
-	    for(p=0; p<cptEnemy; p++){
-	      
-		    for (int j=0;j< WIDTH_MAP;j++){
-                for (int i=0;i<HEIGHT_MAP-1;i++){
-                
-                    if ( towerArray[j][i] == 1){
-                        towerBlack.Position.x = j*TAILLE;
-                        towerBlack.Position.y = i*TAILLE;
-                        
-                            
-                        if (towerAttack[j][i] == 0){
-                            if (estAPortee(&towerBlack, &EnemyTab[p], &towerAttack[j][i])){
-                                DrawLine(screen, towerBlack.Position.x,towerBlack.Position.y, EnemyTab[p].Position.x, EnemyTab[p].Position.y, 3000);
-                                Attack(&towerBlack, &EnemyTab[p], y);
-                            }
-                        }			 
-                    }
-                    
-                    if ( towerArray[j][i] == 2){
-                        towerBlue.Position.x = j*TAILLE;
-                        towerBlue.Position.y = i*TAILLE;
-                        if (towerAttack[j][i] == 0){
-                            if (estAPortee(&towerBlue, &EnemyTab[p], &towerAttack[j][i]) ){
-                                DrawLine(screen, towerBlue.Position.x,towerBlue.Position.y, EnemyTab[p].Position.x, EnemyTab[p].Position.y, 3000);
-                                Attack(&towerBlue, &EnemyTab[p], y);
-                            }
-                        }
-                    }
-                }
-		    }
-		    
-	    }
-
-	    for(p = 0; p < cptEnemy; p++){
-
-		    if((EnemyTab[p].Position.x == positionFin.x) && (EnemyTab[p].Position.y == positionFin.y)){
-
-			    nbVie = nbVie - 1;
-			    EnemyTab[p].estVivant = 0;
-		    }
-	    }
-	    if(nbVie == 0){
-
-		    gameover = 1;
-
-	    }
     
-	    SDL_UpdateRect(screen,0,0,0,0);
- 
-	finVague = 1;
-	for (i=0; i < cptEnemy; i++){
-	    if (EnemyTab[i].HP > 0){
-		finVague = 0;
-	    }
-	    
-	}
-	    
-	    SDL_Delay(5);
-
-	  
-	    for (int j=0;j< WIDTH_MAP;j++){
-			for (int i=0;i<HEIGHT_MAP;i++){
-				towerAttack[j][i] = 0;
-
-			}
-		}
+      
+  
+    struct Tower towerBlack;
+    struct Tower towerBlue;
+    initTower(&towerBlack, &towerBlue);
 
 
-	    
-	}
-    }
+   /*int tab*/
 
-    //score
+    initTabAttack(towerAttack);
     
-    fichierScore = fopen("score.txt", "w+");
-    
-    if (fichierScore == NULL){
-     
-      perror("Error opening file");
-    }
+  
+            
+    	
 
-    else{
+    SDL_Rect positionDebut;
+    SDL_Rect positionFin;
        
-        fscanf(fichierScore, "%d", &recordActuel);
-        if (nbEnnemisTues >= recordActuel){
-        
-            fprintf (fichierScore , "%d" ,nbEnnemisTues);
-        }
-        else{
-	  
-            fprintf (fichierScore, "%d", recordActuel);
-        }
-        if (ferror (fichierScore)){
-        
-            printf("erreur ecriture score.txt\n");
-        }
 
-        fclose(fichierScore);
-    }
+
+    	
+
+    SDL_Rect positionTexteArgent;
+	positionTexteArgent.x = (WIDTH_MAP-8)*TAILLE;
+    positionTexteArgent.y = (HEIGHT_MAP-2)*TAILLE;
+    
+    SDL_Rect posVie;
+    posVie.x = (WIDTH_MAP-16)*TAILLE;
+    posVie.y =(HEIGHT_MAP-2)*TAILLE;    
+    SDL_Rect posVague;
+    posVague.x = (WIDTH_MAP-7)*TAILLE;
+    posVague.y = 0;
+    
+    
+    
+    /* Define the source rectangle for the BlitSurface tower */
+    SDL_Rect towerImage;
+    towerImage.x = 0;
+    towerImage.y = 0;
+    towerImage.w = TAILLE_TOWER;
+    towerImage.h = TAILLE_TOWER;
+
+    /* Define the source rectangle for the BlitSurface sprite */
+    SDL_Rect spriteImage;
+    spriteImage.y = 0;
+    spriteImage.w = TAILLE;
+    spriteImage.h = TAILLE;
+
+    /* Define the source rectangle for the BlitSurface explosion */
+    SDL_Rect explosionImage;
+    explosionImage.y = 0;
+    explosionImage.x = 0;
+    explosionImage.w = TAILLE;
+    explosionImage.h = TAILLE; 
+
+    
+   for (z=1; z<=2; z++){
+    
+        ChargerMap(map, tileset, z);
+	searchPremTermTile( map, &prem,  &positionDebut,  &positionFin);
+	initTabTower(towerArray);
+	      
+	for (y=0; y <= nbVagues; y++){
+            
+		finVague = 0;
+		cptEnemy = cptEnemy+2;
+		EnemyTab = realloc(EnemyTab, sizeof(Enemy) * cptEnemy);
+
+		initEnemy(EnemyTab, cptEnemy, map, positionDebut, y);
+
+		while (gameover == 0 && finVague == 0 && nbVie > 0){
+
+
+			  initHBPosition(EnemyTab, cptEnemy);
+			  
+			  if (SDL_PollEvent(&event)) {
+			      HandleEvent(event, &gameover, &towerBlack.Position, &towerBlue.Position, &towerBlack.cout, &towerBlue.cout, &argent, &towerFlagBlack, &towerFlagBlue, &click, map);
+			      }
+			
+			  SDL_Delay(5);
+		      
+			deplacer(EnemyTab, positionFin, 	positionDebut, cptEnemy);
+			afficherMap(screen,tileset,map);
+
+			afficherEnemy(EnemyTab,cptEnemy, sprite,  spriteImage,screen);
+			
+			positionTower(&towerFlagBlack, &towerFlagBlue, towerArray,  towerBlack,towerBlue); 
+		    
+			afficherTower(towerArray, towerBlack, towerBlue,  screen , towerblue,  towerblack, towerImage );
+			  
+			sprintf(ArgentArray, "argent : %d", argent); /* On écrit dans la chaîne "argent" la nouvelle somme */
+			texteArgent = TTF_RenderText_Blended(policeArgent, ArgentArray, couleurNoire); /* On écrit la chaîne argent dans la SDL_Surface */
+			SDL_BlitSurface(texteArgent, NULL, screen, &positionTexteArgent); /* Blit du texte */ 
+
+			sprintf(VieArray, "vies : %d", nbVie); /* On écrit dans la chaîne "argent" la nouvelle somme */
+			texteVie = TTF_RenderText_Blended(policeArgent, VieArray, couleurNoire); /* On écrit la chaîne argent dans la SDL_Surface */
+			SDL_BlitSurface(texteVie, NULL, screen, &posVie); /* Blit du texte */ 	   
+			
+			sprintf(vagueArray, "Vague : %d", y); /* On écrit dans la chaîne "argent" la nouvelle somme */
+			texteVague = TTF_RenderText_Blended(policeArgent, vagueArray, couleurNoire); /* On écrit la chaîne argent dans la SDL_Surface */
+			SDL_BlitSurface(texteVague, NULL, screen, &posVague); /* Blit du texte */ 			
+			
+			afficherHB(EnemyTab, cptEnemy, HB, screen);
+			  
+			
+			  estMort(cptEnemy, EnemyTab,screen,  explosion, explosionImage, &nbEnnemisTues, &argent);
+			  attaquer(cptEnemy, EnemyTab, towerBlue, towerBlack, towerAttack, towerArray, screen, y);
+
+			  vie(EnemyTab,cptEnemy, &nbVie, &gameover,positionFin);
+		      
+
+			  SDL_UpdateRect(screen,0,0,0,0);
+		  
+			      finVague = 1;
+			      
+			  for (p=0; p < cptEnemy; p++){
+				  if (EnemyTab[p].estVivant == 1){
+					
+				finVague = 0;
+				  }
+				  
+			      }
+				  
+			      initTabAttack(towerAttack);
+		      }
+		  }
+		}
+		  
+    newScore(nbEnnemisTues, fichierScore, recordActuel); 
     
 
     
@@ -606,6 +346,8 @@ int main(int argc,char** argv){
     /* clean up */
     TTF_CloseFont(policeArgent);
     TTF_Quit();
+
+    free(EnemyTab);
     
     SDL_FreeSurface(texteArgent);
     SDL_FreeSurface(tileset);
@@ -619,8 +361,7 @@ int main(int argc,char** argv){
     SDL_Quit();
 
     return EXIT_SUCCESS;
-
-    
+  
 }
 
 

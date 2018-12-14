@@ -41,40 +41,42 @@ void HandleEvent(SDL_Event event, int* gameover, SDL_Rect* towerPositionBlack, S
                     
                 if (*click== 1){ //la tour noire est selectionnée
 			
-			i = event.motion.x / 32;
-			j = event.motion.y / 32;
+        			i = event.motion.x / 32;
+        			j = event.motion.y / 32;
 
-			if (map[i][j]==1){
-		                towerPositionBlack->y = event.motion.y;
-		                towerPositionBlack->x = event.motion.x;
-		                *towerFlagBlack = 1;
-		                *argent -= *towerCoutBlack;
-		                *click = 0;
- 			}  
-			
+        			if (map[i][j]==1){
+        		           
+                        towerPositionBlack->y = event.motion.y;
+        		        towerPositionBlack->x = event.motion.x;
+        		        *towerFlagBlack = 1;
+        		        *argent -= *towerCoutBlack;
+        		        *click = 0;
+         			}  
                 }
+
                 else{
 
                     if ( event.motion.x < 3*32 &&  event.motion.x > 2*32 && event.motion.y < 704 &&  event.motion.y > 672 && *click == 0 && *argent >= *towerCoutBlue ){
                         if(event.button.button == SDL_BUTTON_LEFT){                   
                                 
-                            *click = 2;    
-                           
+                            *click = 2;      
                         }
                     }
                     
                     else{
 
                         if (*click == 2){
-		               	i = event.motion.x / 32;
-				j = event.motion.y / 32;  
-				if (map[i][j]==1){                        
-		                    towerPositionBlue->y = event.motion.y;
-		                    towerPositionBlue->x = event.motion.x;
-		                    *towerFlagBlue = 1;
-		                    *click = 0; 
-		                    *argent -= *towerCoutBlue;  
-				}
+    		               
+                           	i = event.motion.x / 32;
+    				        j = event.motion.y / 32;  
+				            if (map[i][j]==1){                        
+		                    
+                                towerPositionBlue->y = event.motion.y;
+    		                    towerPositionBlue->x = event.motion.x;
+    		                    *towerFlagBlue = 1;
+    		                    *click = 0; 
+    		                    *argent -= *towerCoutBlue;  
+                            }     
                         }
                     } 
                 }

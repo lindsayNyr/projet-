@@ -1,7 +1,10 @@
 #include "define.h"
 
 
-void HandleEvent(SDL_Event event, int* gameover, SDL_Rect* towerPositionBlack, SDL_Rect* towerPositionBlue,int *towerCoutBlack, int *towerCoutBlue, int *argent, int *towerFlagBlack, int *towerFlagBlue,int  *click, int map[WIDTH_MAP][HEIGHT_MAP])
+void HandleEvent(SDL_Event event, int* gameover, SDL_Rect* towerPositionBlack, SDL_Rect* towerPositionBlue,SDL_Rect* towerPositionBlackE, SDL_Rect* towerPositionBlueE,
+    int *towerCoutBlack, int *towerCoutBlue,int *towerCoutBlackE, int *towerCoutBlueE, int *argent, int *towerFlagBlack, 
+    int *towerFlagBlue,int *towerFlagBlackE, 
+    int *towerFlagBlueE , int *click, int map[WIDTH_MAP][HEIGHT_MAP],int towerArray[WIDTH_MAP][HEIGHT_MAP] )
 {
 	int i, j;
     switch (event.type) {
@@ -79,6 +82,39 @@ void HandleEvent(SDL_Event event, int* gameover, SDL_Rect* towerPositionBlack, S
                             }     
                         }
                     } 
+                }
+           
+
+                if(event.button.button == SDL_BUTTON_RIGHT){
+                    
+                        i = event.motion.x / 32;
+                        j = event.motion.y / 32; 
+
+                    if (towerArray[i][j]==1){   
+                        if(*argent >= *towerCoutBlackE){
+         
+                            towerPositionBlackE->y = event.motion.y;
+                            towerPositionBlackE->x = event.motion.x;
+                            *towerFlagBlackE = 1;
+                            *argent -= *towerCoutBlackE;
+                            //*click = 0;
+                        }
+                    }
+                
+                   // else{
+                        if (towerArray[i][j]==2){ 
+
+                           
+
+                            if(*argent >= *towerCoutBlueE){
+             
+                               towerPositionBlueE->y = event.motion.y;
+                               towerPositionBlueE->x = event.motion.x;
+                               *towerFlagBlueE = 1;
+                               *argent -= *towerCoutBlueE;  
+                            }
+                        }
+                  //  }
                 }
             }
         break;               

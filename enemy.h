@@ -75,11 +75,11 @@ void vie(struct Enemy* EnemyTab, int cptEnemy, int *nbVie, int *gameover, SDL_Re
 
     for(int p = 0; p < cptEnemy; p++){
 
-        if((EnemyTab[p].Position.x == positionFin.x) && (EnemyTab[p].Position.y == positionFin.y)){
+        if((EnemyTab[p].Position.x == positionFin.x) && (EnemyTab[p].Position.y == positionFin.y)&&(EnemyTab[p].estVivant == 1)){
 
             *nbVie = *nbVie - 1;
             EnemyTab[p].estVivant = 0;
-           printf("%d", *nbVie);
+           printf("%d vies \n", *nbVie);
         }
     }
             

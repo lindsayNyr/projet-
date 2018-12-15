@@ -26,5 +26,6 @@ struct Tower
   int distAttaque;
   int degats;
   int cout;
+  int flag;
   SDL_Rect Position;
 };

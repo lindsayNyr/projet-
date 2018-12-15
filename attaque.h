@@ -98,7 +98,9 @@ void DrawLine(SDL_Surface * surf,int x1,int y1,int x2,int y2,Uint32 color){
 
 
 
-void attaquer(int cptEnemy, struct Enemy* EnemyTab, struct Tower towerBlue, struct Tower towerBlack, int towerAttack[WIDTH_MAP][HEIGHT_MAP], int towerArray[WIDTH_MAP][HEIGHT_MAP], SDL_Surface* screen, int y ){
+void attaquer(int cptEnemy, struct Enemy* EnemyTab, struct Tower towerBlue, struct Tower towerBlackE, struct Tower towerBlueE, 
+                struct Tower towerBlack, int towerAttack[WIDTH_MAP][HEIGHT_MAP], 
+                int towerArray[WIDTH_MAP][HEIGHT_MAP], SDL_Surface* screen, int y ){
   
      
     for(int p=0; p<cptEnemy; p++){      
@@ -109,15 +111,14 @@ void attaquer(int cptEnemy, struct Enemy* EnemyTab, struct Tower towerBlue, stru
                     
                     towerBlack.Position.x = j*TAILLE;
                     towerBlack.Position.y = i*TAILLE;
-                            
-                                
+                                    
                     if (towerAttack[j][i] == 0){
                         if (estAPortee(&towerBlack, &EnemyTab[p], &towerAttack[j][i])){
                                
-                                DrawLine(screen, towerBlack.Position.x,towerBlack.Position.y, EnemyTab[p].Position.x, EnemyTab[p].Position.y, 3000);
-                                Attack(&towerBlack, &EnemyTab[p], y);
-                            }
-                        }			 
+                            DrawLine(screen, towerBlack.Position.x,towerBlack.Position.y, EnemyTab[p].Position.x, EnemyTab[p].Position.y, 3000);
+                            Attack(&towerBlack, &EnemyTab[p], y);
+                        }
+                    }			 
                 }
                         
                 if ( towerArray[j][i] == 2){
@@ -130,6 +131,35 @@ void attaquer(int cptEnemy, struct Enemy* EnemyTab, struct Tower towerBlue, stru
                                    
                             DrawLine(screen, towerBlue.Position.x,towerBlue.Position.y, EnemyTab[p].Position.x, EnemyTab[p].Position.y, 3000);
                             Attack(&towerBlue, &EnemyTab[p], y);
+                                
+                        }
+                    }
+                }
+
+                if ( towerArray[j][i] == 3){
+                    
+                    towerBlackE.Position.x = j*TAILLE;
+                    towerBlackE.Position.y = i*TAILLE;
+                                    
+                    if (towerAttack[j][i] == 0){
+                        if (estAPortee(&towerBlackE, &EnemyTab[p], &towerAttack[j][i])){
+                               
+                            DrawLine(screen, towerBlackE.Position.x,towerBlackE.Position.y, EnemyTab[p].Position.x, EnemyTab[p].Position.y, 3000);
+                            Attack(&towerBlackE, &EnemyTab[p], y);
+                        }
+                    }            
+                }
+
+                if ( towerArray[j][i] == 4){
+                            
+                    towerBlueE.Position.x = j*TAILLE;
+                    towerBlueE.Position.y = i*TAILLE;
+                            
+                    if (towerAttack[j][i] == 0){
+                        if (estAPortee(&towerBlueE, &EnemyTab[p], &towerAttack[j][i]) ){
+                                   
+                            DrawLine(screen, towerBlueE.Position.x, towerBlueE.Position.y, EnemyTab[p].Position.x, EnemyTab[p].Position.y, 3000);
+                            Attack(&towerBlueE, &EnemyTab[p], y);
                                 
                         }
                     }

@@ -1,6 +1,6 @@
 #include "define.h"
  
-void ChargerMap(int  map[WIDTH_MAP][HEIGHT_MAP],  SDL_Surface *tileset){
+void ChargerMap(int  map[WIDTH_MAP][HEIGHT_MAP],  SDL_Surface *tileset, int z){
   
     FILE* fichier = NULL;
      
@@ -11,8 +11,12 @@ void ChargerMap(int  map[WIDTH_MAP][HEIGHT_MAP],  SDL_Surface *tileset){
         system("pause");
         exit(-1);
     }
-
-    fichier = fopen("level.txt", "r");
+    if (z==1){
+    fichier = fopen("level1.txt", "r");
+    }
+    if (z==2){
+    fichier = fopen("level2.txt", "r");
+    }    
         
     if (fichier != NULL){
     

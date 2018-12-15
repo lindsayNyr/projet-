@@ -4,10 +4,10 @@
 struct Enemy
 {
   int HP;
-  int vitesse;
   int indiceX; //indice map x
   int indiceY; //indice map y 
   int pixel ;
+  int numEnemy;
   int estVivant;
   int currentDirection ; /* Information about the current situation of the sprite: */
   int animFlip; /* Information about the animationFlip of the sprite: */
@@ -26,5 +26,6 @@ struct Tower
   int distAttaque;
   int degats;
   int cout;
+  int flag;
   SDL_Rect Position;
 };

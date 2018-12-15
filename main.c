@@ -26,9 +26,14 @@
 #include "tower.h"
 #include "enemy.h"
 
+#include <time.h>
+
 
 
 int main(int argc,char** argv){
+
+    srand(time(NULL));
+
    
     
   
@@ -59,7 +64,7 @@ int main(int argc,char** argv){
     struct Enemy *EnemyTab = malloc(sizeof(Enemy) * cptEnemy);
    
     //init SDL
-    SDL_Surface *screen, *tileset, *towerblack, *towerblue, *towerblackE, *towerblueE, *sprite, *temp,
+    SDL_Surface *screen, *tileset, *towerblack, *towerblue, *towerblackE, *towerblueE, *sprite, *sprite2, *temp,
     		    *explosion, *HB, *missile , *texteArgent, *textePlay, *texteQuit,
                 *menu, *texteScore, *texteVie, *texteVague;
     
@@ -185,6 +190,9 @@ int main(int argc,char** argv){
     sprite = SDL_DisplayFormat(temp);
     SDL_FreeSurface(temp);
 
+     temp = SDL_LoadBMP("images/sprite2.bmp");
+    sprite2 = SDL_DisplayFormat(temp);
+    SDL_FreeSurface(temp);
     //load sprite
     temp = SDL_LoadBMP("images/tiles.bmp");
     tileset = SDL_DisplayFormat(temp);
@@ -217,6 +225,8 @@ int main(int argc,char** argv){
     SDL_SetColorKey(towerblackE, SDL_SRCCOLORKEY | SDL_RLEACCEL, colorkey2);
     SDL_SetColorKey(towerblueE, SDL_SRCCOLORKEY | SDL_RLEACCEL, colorkey2);
     SDL_SetColorKey(sprite, SDL_SRCCOLORKEY | SDL_RLEACCEL, colorkey);
+    SDL_SetColorKey(sprite2, SDL_SRCCOLORKEY | SDL_RLEACCEL, colorkey3);
+
     SDL_SetColorKey(explosion, SDL_SRCCOLORKEY | SDL_RLEACCEL, colorkey2);
     SDL_SetColorKey(HB, SDL_SRCCOLORKEY | SDL_RLEACCEL, colorkey3);
     SDL_SetColorKey(missile, SDL_SRCCOLORKEY | SDL_RLEACCEL, colorkey3);
@@ -233,17 +243,10 @@ int main(int argc,char** argv){
 
     initTabAttack(towerAttack);
     
-  
-            
-    	
 
     SDL_Rect positionDebut;
     SDL_Rect positionFin;
        
-
-
-    	
-
     SDL_Rect positionTexteArgent;
 	positionTexteArgent.x = (WIDTH_MAP-8)*TAILLE;
     positionTexteArgent.y = (HEIGHT_MAP-2)*TAILLE;
@@ -309,7 +312,7 @@ int main(int argc,char** argv){
 			deplacer(EnemyTab, positionFin, 	positionDebut, cptEnemy);
 			afficherMap(screen,tileset,map);
 
-			afficherEnemy(EnemyTab,cptEnemy, sprite,  spriteImage,screen);
+			afficherEnemy(EnemyTab,cptEnemy, sprite, sprite2,  spriteImage,screen);
 			
 			positionTower(towerArray,  &towerBlack, &towerBlue, &towerBlackE, &towerBlueE); 
 		    
@@ -371,8 +374,11 @@ int main(int argc,char** argv){
     SDL_FreeSurface(tileset);
     SDL_FreeSurface(HB);
     SDL_FreeSurface(sprite);
+    SDL_FreeSurface(sprite);
     SDL_FreeSurface(towerblack);
     SDL_FreeSurface(towerblue);
+    SDL_FreeSurface(towerblackE);
+    SDL_FreeSurface(towerblueE);
     SDL_FreeSurface(explosion);
     SDL_FreeSurface(screen);
 

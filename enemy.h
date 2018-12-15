@@ -1,3 +1,9 @@
+
+
+//#include <stdlib.h>
+
+
+
 void initHBPosition(struct Enemy* EnemyTab, int cptEnemy){
    
 
@@ -14,9 +20,38 @@ void initHBPosition(struct Enemy* EnemyTab, int cptEnemy){
 void initEnemy(struct Enemy* EnemyTab,int cptEnemy, int map[WIDTH_MAP][HEIGHT_MAP], SDL_Rect positionDebut, int y){
 
     for (int i = 0; i < cptEnemy; i++){
-            
-        EnemyTab[i].HP = 1000*y;
-        EnemyTab[i].vitesse = 1;
+
+        
+        if( y >= 5){
+
+            int nbAlea = (rand() % 2) + 1; 
+            if(nbAlea == 1){
+                
+                EnemyTab[i].HP = 1000*y;
+                EnemyTab[i].numEnemy = 1;
+
+            }
+
+            if(nbAlea == 2){
+
+                EnemyTab[i].HP = 2000*y;
+                EnemyTab[i].numEnemy = 2;
+
+            }
+        }
+
+        else{
+
+            EnemyTab[i].HP = 1000*y;
+            EnemyTab[i].numEnemy = 1;
+
+        }
+
+        
+        
+
+
+
         EnemyTab[i].indiceX = 0;
         EnemyTab[i].indiceY = 0;
         EnemyTab[i].pixel = 1;
@@ -48,13 +83,22 @@ void initEnemy(struct Enemy* EnemyTab,int cptEnemy, int map[WIDTH_MAP][HEIGHT_MA
     }
 }
 
-void afficherEnemy(struct Enemy* EnemyTab, int cptEnemy, SDL_Surface *sprite, SDL_Rect spriteImage, SDL_Surface *screen){
+void afficherEnemy(struct Enemy* EnemyTab, int cptEnemy, SDL_Surface *sprite, SDL_Surface *sprite2,  SDL_Rect spriteImage, SDL_Surface *screen){
 
     for( int p = 0 ; p < cptEnemy; p++){
         if (EnemyTab[p].HP>0 && EnemyTab[p].estVivant== 1){
+
               
             spriteImage.x = TAILLE*(2*EnemyTab[p].currentDirection + EnemyTab[p].animFlip);
-            SDL_BlitSurface(sprite, &spriteImage, screen, &EnemyTab[p].Position);
+
+            if(EnemyTab[p].numEnemy == 1){
+                SDL_BlitSurface(sprite, &spriteImage, screen, &EnemyTab[p].Position);
+            }
+
+            if(EnemyTab[p].numEnemy == 2){
+
+               SDL_BlitSurface(sprite2 , &spriteImage, screen, &EnemyTab[p].Position);
+            }
         }
     }
 }

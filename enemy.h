@@ -47,11 +47,7 @@ void initEnemy(struct Enemy* EnemyTab,int cptEnemy, int map[WIDTH_MAP][HEIGHT_MA
 
         }
 
-        
-        
-
-
-
+    
         EnemyTab[i].indiceX = 0;
         EnemyTab[i].indiceY = 0;
         EnemyTab[i].pixel = 1;
@@ -123,7 +119,6 @@ void vie(struct Enemy* EnemyTab, int cptEnemy, int *nbVie, int *gameover, SDL_Re
 
             *nbVie = *nbVie - 1;
             EnemyTab[p].estVivant = 0;
-           printf("%d vies \n", *nbVie);
         }
     }
             

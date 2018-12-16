@@ -1,12 +1,12 @@
 #define abs_max(x, y) ((abs(x)>abs(y))?abs(x):abs(y)) 
-#define TAILLE 32
+
 #include "define.h"
 
 
 //fonction qui retourne 1 si la tour est assez proche pour attaquer
-int estAPortee(struct Tower* tour, struct Enemy* mechant, int* towerAttack){
+int estAPortee(struct Tower tour, struct Enemy mechant, int* towerAttack){
     
-    if (((tour->Position.x -tour->distAttaque*TAILLE) <= (mechant->Position.x) &&(mechant->Position.x)  <= (tour->Position.x+tour->distAttaque*TAILLE)  && (tour->Position.y - tour->distAttaque*TAILLE) <= (mechant->Position.y) && (mechant->Position.y)<= ( tour->Position.y+tour->distAttaque*TAILLE))&&(mechant->HP >0)){
+    if (((tour.Position.x -tour.distAttaque*TAILLE) <= (mechant.Position.x) &&(mechant.Position.x)  <= (tour.Position.x+tour.distAttaque*TAILLE)  && (tour.Position.y - tour.distAttaque*TAILLE) <= (mechant.Position.y) && (mechant.Position.y)<= ( tour.Position.y+tour.distAttaque*TAILLE))&&(mechant.HP >0)){
 
        *towerAttack = 1;
        
@@ -23,15 +23,21 @@ int estAPortee(struct Tower* tour, struct Enemy* mechant, int* towerAttack){
 
 
 //fonction d'attaque
-void Attack(struct Tower* tour , struct Enemy* mechant, int y){
+void Attack(struct Tower tour , struct Enemy* mechant, int y){
 
-    if (((tour->Position.x -tour->distAttaque*TAILLE) <= (mechant->Position.x) &&(mechant->Position.x)  <= (tour->Position.x+tour->distAttaque*TAILLE)  && (tour->Position.y - tour->distAttaque*TAILLE) <= (mechant->Position.y) && (mechant->Position.y)<= ( tour->Position.y+tour->distAttaque*TAILLE))&&(mechant->HP >0)){
+    if (((tour.Position.x -tour.distAttaque*TAILLE) <= (mechant->Position.x) &&(mechant->Position.x)  <= (tour.Position.x+tour.distAttaque*TAILLE)  && (tour.Position.y - tour.distAttaque*TAILLE) <= (mechant->Position.y) && (mechant->Position.y)<= ( tour.Position.y+tour.distAttaque*TAILLE))&&(mechant->HP >0)){
        
-        mechant->HP -= tour->degats;
+        
+        mechant->HP -= tour.degats;
+	
        
         if (mechant->HBImage.w >0){
-         
-            mechant->HBImage.w = 32-(32-( (32*mechant->HP)/(1000*y)));
+         	if (mechant->numEnemy == 1){
+            		mechant->HBImage.w = 32-(32-( (32*mechant->HP)/(1000*y)));
+		}
+		if (mechant->numEnemy == 2){
+			mechant->HBImage.w = 32-(32-( (32*mechant->HP)/(2000*y)));		
+		}
         }
     }
 
@@ -98,8 +104,8 @@ void DrawLine(SDL_Surface * surf,int x1,int y1,int x2,int y2,Uint32 color){
 
 
 
-void attaquer(int cptEnemy, struct Enemy* EnemyTab, struct Tower towerBlue, struct Tower towerBlackE, struct Tower towerBlueE, 
-                struct Tower towerBlack, int towerAttack[WIDTH_MAP][HEIGHT_MAP], 
+void attaquer(int cptEnemy, struct Enemy* EnemyTab, struct Tower towerBlue, struct Tower towerBlack, struct Tower towerBlueE, 
+                struct Tower towerBlackE, int towerAttack[WIDTH_MAP][HEIGHT_MAP], 
                 int towerArray[WIDTH_MAP][HEIGHT_MAP], SDL_Surface* screen, int y ){
   
      
@@ -113,10 +119,10 @@ void attaquer(int cptEnemy, struct Enemy* EnemyTab, struct Tower towerBlue, stru
                     towerBlack.Position.y = i*TAILLE;
                                     
                     if (towerAttack[j][i] == 0){
-                        if (estAPortee(&towerBlack, &EnemyTab[p], &towerAttack[j][i])){
+                        if (estAPortee(towerBlack, EnemyTab[p], &towerAttack[j][i])){
                                
                             DrawLine(screen, towerBlack.Position.x,towerBlack.Position.y, EnemyTab[p].Position.x, EnemyTab[p].Position.y, 3000);
-                            Attack(&towerBlack, &EnemyTab[p], y);
+                            Attack(towerBlack, &EnemyTab[p], y);
                         }
                     }			 
                 }
@@ -127,10 +133,10 @@ void attaquer(int cptEnemy, struct Enemy* EnemyTab, struct Tower towerBlue, stru
                     towerBlue.Position.y = i*TAILLE;
                             
                     if (towerAttack[j][i] == 0){
-                        if (estAPortee(&towerBlue, &EnemyTab[p], &towerAttack[j][i]) ){
+                        if (estAPortee(towerBlue, EnemyTab[p], &towerAttack[j][i]) ){
                                    
                             DrawLine(screen, towerBlue.Position.x,towerBlue.Position.y, EnemyTab[p].Position.x, EnemyTab[p].Position.y, 3000);
-                            Attack(&towerBlue, &EnemyTab[p], y);
+                            Attack(towerBlue, &EnemyTab[p], y);
                                 
                         }
                     }
@@ -142,10 +148,10 @@ void attaquer(int cptEnemy, struct Enemy* EnemyTab, struct Tower towerBlue, stru
                     towerBlackE.Position.y = i*TAILLE;
                                     
                     if (towerAttack[j][i] == 0){
-                        if (estAPortee(&towerBlackE, &EnemyTab[p], &towerAttack[j][i])){
+                        if (estAPortee(towerBlackE, EnemyTab[p], &towerAttack[j][i])){
                                
                             DrawLine(screen, towerBlackE.Position.x,towerBlackE.Position.y, EnemyTab[p].Position.x, EnemyTab[p].Position.y, 3000);
-                            Attack(&towerBlackE, &EnemyTab[p], y);
+                            Attack(towerBlackE, &EnemyTab[p], y);
                         }
                     }            
                 }
@@ -156,10 +162,10 @@ void attaquer(int cptEnemy, struct Enemy* EnemyTab, struct Tower towerBlue, stru
                     towerBlueE.Position.y = i*TAILLE;
                             
                     if (towerAttack[j][i] == 0){
-                        if (estAPortee(&towerBlueE, &EnemyTab[p], &towerAttack[j][i]) ){
+                        if (estAPortee(towerBlueE, EnemyTab[p], &towerAttack[j][i]) ){
                                    
                             DrawLine(screen, towerBlueE.Position.x, towerBlueE.Position.y, EnemyTab[p].Position.x, EnemyTab[p].Position.y, 3000);
-                            Attack(&towerBlueE, &EnemyTab[p], y);
+                            Attack(towerBlueE, &EnemyTab[p], y);
                                 
                         }
                     }
@@ -170,7 +176,7 @@ void attaquer(int cptEnemy, struct Enemy* EnemyTab, struct Tower towerBlue, stru
   
 }
 
-void estMort(int cptEnemy, struct Enemy* EnemyTab, SDL_Surface* screen,SDL_Surface* explosion, SDL_Rect explosionImage, int *nbEnnemisTues, int *argent ){
+void estMort(int cptEnemy, struct Enemy* EnemyTab, SDL_Surface* screen,SDL_Surface* explosion, SDL_Rect explosionImage, int *nbEnnemisTues, int *argent, int y ){
   
     for( int p = 0 ; p < cptEnemy; p++){
 		if (EnemyTab[p].HP <= 0 && EnemyTab[p].estVivant == 1){       //quand un ennemi meurt
@@ -184,7 +190,7 @@ void estMort(int cptEnemy, struct Enemy* EnemyTab, SDL_Surface* screen,SDL_Surfa
     			    
     		}
     		*nbEnnemisTues +=1;
-    		*argent += 10;
+    		*argent += 10/y +2;
     	}
 	}  
 }

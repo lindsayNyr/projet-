@@ -46,7 +46,7 @@ int main(int argc,char** argv){
     int gameover = 0, click = 0, recordActuel = 0, 
         nbEnnemisTues = 0, p = 0, finVague = 0, prem = 0 ; 
     
-    int argent = 30, compteurMenu = 1, cptEnemy = 2, nbVie = 10, nbVagues = 10;
+    int argent = 30, compteurMenu = 1, cptEnemy = 1, nbVie = 10, nbVagues = 10;
     
 
 
@@ -66,7 +66,7 @@ int main(int argc,char** argv){
     //init SDL
     SDL_Surface *screen, *tileset, *towerblack, *towerblue, *towerblackE, *towerblueE, *sprite, *sprite2, *temp,
     		    *explosion, *HB, *texteArgent, *textePlay, *texteQuit,
-                *menu, *texteScore, *texteVie, *texteVague ,*coeur, *piece, *texteDegat1, *texteDegat2, *texteCout1, *texteCout2 ;
+                *menu, *texteScore, *texteVie, *texteVague ,*coeur, *piece, *texteDegat1, *texteDegat2, *texteCout1, *texteCout2, *gameoverBMP ;
     
     SDL_Event event;
     SDL_Event eventMenu; //Initialise un évnènement qui servira à récupérer la saisie au clavier de la touche entrée
@@ -97,10 +97,10 @@ int main(int argc,char** argv){
     texteArgent = TTF_RenderText_Blended(police50, ArgentArray, couleurNoire);
     sprintf(ScoreArray, "Score : %d", recordActuel);
     
-    texteCout1 = TTF_RenderText_Blended(police20, "cout:10", couleurNoire);
-    texteCout2 = TTF_RenderText_Blended(police20, "cout:40", couleurNoire);
-    texteDegat1 = TTF_RenderText_Blended(police20, "degats:5", couleurNoire);
-    texteDegat2 = TTF_RenderText_Blended(police20, "degats:20", couleurNoire);
+    texteCout1 = TTF_RenderText_Blended(police20, "cout:10 (30)", couleurNoire);
+    texteCout2 = TTF_RenderText_Blended(police20, "cout:100 (50)", couleurNoire);
+    texteDegat1 = TTF_RenderText_Blended(police20, "degats:20 (40)", couleurNoire);
+    texteDegat2 = TTF_RenderText_Blended(police20, "degats:70 (90)", couleurNoire);
 
 
     /* set the title bar */
@@ -123,11 +123,11 @@ int main(int argc,char** argv){
     SDL_Rect posDegat1, posDegat2, posCout1, posCout2;
     posDegat1.x = 1*TAILLE;
     posDegat1.y = 21*TAILLE;
-    posDegat2.x = 5*TAILLE;
+    posDegat2.x = 6*TAILLE;
     posDegat2.y = 21*TAILLE;
     posCout1.x = 1*TAILLE;
     posCout1.y = 20*TAILLE;
-    posCout2.x = 5*TAILLE;
+    posCout2.x = 6*TAILLE;
     posCout2.y = 20*TAILLE;
     
 
@@ -184,12 +184,12 @@ int main(int argc,char** argv){
     towerblue = SDL_DisplayFormat(temp);
     SDL_FreeSurface(temp);
 
-    temp = SDL_LoadBMP("images/tower_violet.bmp");
+    temp = SDL_LoadBMP("images/tower_green.bmp");
     towerblackE = SDL_DisplayFormat(temp);
     SDL_FreeSurface(temp);
     
     
-    temp = SDL_LoadBMP("images/tower_green.bmp");
+    temp = SDL_LoadBMP("images/tower_violet.bmp");
     towerblueE = SDL_DisplayFormat(temp);
     SDL_FreeSurface(temp);
     
@@ -226,6 +226,9 @@ int main(int argc,char** argv){
     piece = SDL_DisplayFormat(temp);
     SDL_FreeSurface(temp);
 
+    temp = SDL_LoadBMP("images/gameover.bmp");
+    gameoverBMP = SDL_DisplayFormat(temp);
+    SDL_FreeSurface(temp);
     
     /* setup launcher colorkey and turn on RLE */
     colorkey = SDL_MapRGB(screen->format, 255, 0, 255);
@@ -261,7 +264,10 @@ int main(int argc,char** argv){
     SDL_Rect positionFin;
     SDL_Rect posPiece;       
     SDL_Rect posCoeur;
-
+    SDL_Rect posgameover;
+    
+	posgameover.x = 0;
+    posgameover.y = 0;
     posPiece.x = 19*TAILLE;
     posPiece.y = 20*TAILLE;	
     posCoeur.x = 13*TAILLE;
@@ -302,10 +308,11 @@ int main(int argc,char** argv){
 
     
    for (z=1; z<=2; z++){
-    
+    cptEnemy = 1;
     ChargerMap(map, tileset, z);
 	searchPremTermTile( map, &prem,  &positionDebut,  &positionFin);
 	initTabTower(towerArray);
+    argent = 30;
 	      
 	for (y=0; y <= nbVagues; y++){
             
@@ -387,11 +394,20 @@ int main(int argc,char** argv){
 		       
 		  }
 		}
+		
+		
+
+        
+
     }
 		  
     newScore(nbEnnemisTues, fichierScore, recordActuel); 
     
-
+    SDL_BlitSurface(gameoverBMP, NULL, screen, &posgameover);
+    compteurMenu = 1;
+    gameover = 0;
+    SDL_UpdateRect(screen,0,0,0,0);
+    SDL_Delay(1000);
     
     printf("GAMEOVER\n");
 
@@ -408,7 +424,7 @@ int main(int argc,char** argv){
     SDL_FreeSurface(texteArgent);
     SDL_FreeSurface(tileset);
     SDL_FreeSurface(HB);
-    SDL_FreeSurface(sprite);
+    SDL_FreeSurface(gameoverBMP);
 
     SDL_FreeSurface(towerblack);
     SDL_FreeSurface(towerblue);

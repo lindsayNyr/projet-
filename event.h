@@ -47,9 +47,9 @@ void HandleEvent(SDL_Event event, int* gameover, SDL_Rect* towerPositionBlack, S
         			i = event.motion.x / 32;
         			j = event.motion.y / 32;
 
-        			if (map[i][j]==1){
+        			if (map[i][j]==1 && towerArray[i][j] != 1 && towerArray[i][j] != 3){
         		           
-                        	towerPositionBlack->y = event.motion.y;
+                        towerPositionBlack->y = event.motion.y;
         		        towerPositionBlack->x = event.motion.x;
         		        *towerFlagBlack = 1;
         		        *argent -= *towerCoutBlack;
@@ -59,7 +59,7 @@ void HandleEvent(SDL_Event event, int* gameover, SDL_Rect* towerPositionBlack, S
 
                 else{
 
-                    if ( event.motion.x < 5*32 &&  event.motion.x > 4*32 && event.motion.y < 704 &&  event.motion.y > 672 && *click == 0 && *argent >= *towerCoutBlue ){
+                    if ( event.motion.x < 6*32 &&  event.motion.x > 5*32 && event.motion.y < 704 &&  event.motion.y > 672 && *click == 0 && *argent >= *towerCoutBlue ){
                         if(event.button.button == SDL_BUTTON_LEFT){                   
                                 
                             *click = 2;      
@@ -72,7 +72,7 @@ void HandleEvent(SDL_Event event, int* gameover, SDL_Rect* towerPositionBlack, S
     		               
                            	i = event.motion.x / 32;
     				        j = event.motion.y / 32;  
-				            if (map[i][j]==1){                        
+				            if (map[i][j]==1 && towerArray[i][j] != 2 && towerArray[i][j] != 4){                        
 		                    
                                 towerPositionBlue->y = event.motion.y;
     		                    towerPositionBlue->x = event.motion.x;
@@ -87,34 +87,32 @@ void HandleEvent(SDL_Event event, int* gameover, SDL_Rect* towerPositionBlack, S
 
                 if(event.button.button == SDL_BUTTON_RIGHT){
                     
-                        i = event.motion.x / 32;
-                        j = event.motion.y / 32; 
+                    i = event.motion.x / 32;
+                    j = event.motion.y / 32; 
 
-                    if (towerArray[i][j]==1){   
+                    if ((towerArray[i][j] == 1) && ((i != 0 && j != 21) ||  (i != 4 && j != 21))){   
                         if(*argent >= *towerCoutBlackE){
          
                             towerPositionBlackE->y = event.motion.y;
                             towerPositionBlackE->x = event.motion.x;
                             *towerFlagBlackE = 1;
                             *argent -= *towerCoutBlackE;
-                            //*click = 0;
+                            
                         }
                     }
                 
-                   // else{
-                        if (towerArray[i][j]==2){ 
+                 
+                    if ((towerArray[i][j]==2) && ((i != 0 && j != 21) ||  (i != 4 && j != 21))){ 
 
-                           
-
-                            if(*argent >= *towerCoutBlueE){
+                        if(*argent >= *towerCoutBlueE){
              
-                               towerPositionBlueE->y = event.motion.y;
-                               towerPositionBlueE->x = event.motion.x;
-                               *towerFlagBlueE = 1;
-                               *argent -= *towerCoutBlueE;  
-                            }
+                            towerPositionBlueE->y = event.motion.y;
+                            towerPositionBlueE->x = event.motion.x;
+                            *towerFlagBlueE = 1;
+                            *argent -= *towerCoutBlueE;  
                         }
-                  //  }
+                    }
+                  
                 }
             }
         break;               

@@ -80,7 +80,7 @@ void initTabTower(int towerArray[WIDTH_MAP][HEIGHT_MAP]){
                 towerArray[j][i] = 1;     
             }
             
-            if ( j == 4  && i == HEIGHT_MAP-1 ){
+            if ( j == 5  && i == HEIGHT_MAP-1 ){
                
                 towerArray[j][i] = 2;     
             }
@@ -91,30 +91,28 @@ void initTabTower(int towerArray[WIDTH_MAP][HEIGHT_MAP]){
 void initTower(struct Tower* towerBlack,struct Tower* towerBlue,struct Tower* towerBlackE ,struct Tower* towerBlueE ){
 
     towerBlack->distAttaque = 3;
-    towerBlack->degats = 5;   //par pixel
+    towerBlack->degats = 20;   
     towerBlack->cout = 10;
     towerBlack->Position.x = 0;
     towerBlack->flag= 0; 
     
     towerBlue->distAttaque = 2;
-    towerBlue->degats = 20;   //par pixel
-    towerBlue->cout = 20;
+    towerBlue->degats = 70;   
+    towerBlue->cout = 100;
     towerBlue->Position.x = 0;
     towerBlue->Position.y = 0; 
     towerBlue->flag= 0; 
     
     towerBlackE->distAttaque = 3;
-    towerBlackE->degats = 15;   //par pixel
-    towerBlackE->cout = 10;
+    towerBlackE->degats = 40;   
+    towerBlackE->cout = 30;
     towerBlackE->Position.x = 0;
     towerBlackE->Position.y = 0; 
     towerBlackE->flag = 0; 
     
-    //declaration d'une tour
-    
     towerBlueE->distAttaque = 2;
-    towerBlueE->degats = 25;   //par pixel
-    towerBlueE->cout = 20;
+    towerBlueE->degats = 90;   
+    towerBlueE->cout = 50;
     towerBlueE->Position.x = 0;
     towerBlueE->flag = 0; 
 

@@ -47,11 +47,7 @@ void initEnemy(struct Enemy* EnemyTab,int cptEnemy, int map[WIDTH_MAP][HEIGHT_MA
 
         }
 
-        
-        
-
-
-
+    
         EnemyTab[i].indiceX = 0;
         EnemyTab[i].indiceY = 0;
         EnemyTab[i].pixel = 1;

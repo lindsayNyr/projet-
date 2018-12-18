@@ -1,8 +1,17 @@
 #include "define.h"
 
-void HandleEvent(SDL_Event event, int* gameover, SDL_Rect* towerPositionBlack, SDL_Rect* towerPositionBlue , int *towerFlagBlack, int *towerFlagBlue, int cout1, int cout2, int  *click, int* argent)
-{
 
+void HandleEvent(SDL_Event event, int* gameover, SDL_Rect* towerPositionBlack, SDL_Rect* towerPositionBlue,SDL_Rect* towerPositionBlackE, SDL_Rect* towerPositionBlueE,
+    int *towerCoutBlack, int *towerCoutBlue,int *towerCoutBlackE, int *towerCoutBlueE, int *argent, int *towerFlagBlack, 
+    int *towerFlagBlue,int *towerFlagBlackE, 
+    int *towerFlagBlueE , int *click, int map[WIDTH_MAP][HEIGHT_MAP],int towerArray[WIDTH_MAP][HEIGHT_MAP] )
+{
+	int i = 0, j = 0;
+	int mousex = 0, mousey = 0 ;
+	
+	
+	
+	
     switch (event.type) {
         
         /* close button clicked */
@@ -25,50 +34,110 @@ void HandleEvent(SDL_Event event, int* gameover, SDL_Rect* towerPositionBlack, S
                 break;    
             }
             
-            //break;
+            break;
 
         case SDL_MOUSEBUTTONDOWN:
+	  
+		   
+		       
+		    	
+		     switch(event.button.button){
+		       
+		
+		       
+		       case SDL_BUTTON_LEFT:
+			
+			mousex = event.button.x/32 ;
+			mousey = event.button.y/32 ;
 
 
+		   
+			 if ( mousex == 0 && mousey == 21 && *click == 0 && *argent >= *towerCoutBlack ){ //tour noir
+              
+                         
+                    *click = 1;    
+                }
+                 
 
+            else{
+                    
+                if (*click== 1){ //la tour noire est selectionnée
+			
+        			i = event.button.x / 32;
+        			j = event.button.y / 32;
 
+        			if (map[i][j]==1 && towerArray[i][j] != 1 && towerArray[i][j] != 3){
+        		           
+                        towerPositionBlack->y = event.button.y;
+        		        towerPositionBlack->x = event.button.x;
+        		        *towerFlagBlack = 1;
+        		        *argent -= *towerCoutBlack;
+        		        *click = 0;
+         			}  
+                }
 
-	   
-		if ( event.motion.x < 32 &&  event.motion.x > 0 && event.motion.y < 640 &&  event.motion.y > 608 && *click == 0 && *argent >= cout1 ){ //tour bleue
-               		if(event.button.button == SDL_BUTTON_LEFT){
-                    		*click = 1;    
-		        }
-		  }     
+                else{
 
-			else{
-                		if (*click== 1){ //la tour bleue est selectionnée
-		            		towerPositionBlack->y = event.motion.y;
-		            		towerPositionBlack->x = event.motion.x;
-		            		*towerFlagBlack = 1;
-					*argent -= cout1;
-		            		*click = 0;   
-                		}
-			else{
+                    if ( mousex == 5 && mousey == 21 && *click == 0 && *argent >= *towerCoutBlue ){
+                     //   if(event.button.button == SDL_BUTTON_LEFT){                   
+                                
+                            *click = 2;      
+                        }
+                   // }
+                    
+                    else{
 
+                        if (*click == 2){
+    		               
+                           	i = event.button.x / 32;
+    				        j = event.button.y / 32;  
+				            if (map[i][j]==1 && towerArray[i][j] != 2 && towerArray[i][j] != 5){                        
+		                    
+                               towerPositionBlue->y = event.button.y;
+    		                    towerPositionBlue->x = event.button.x;
+    		                    *towerFlagBlue = 1;
+    		                    *click = 0; 
+    		                    *argent -= *towerCoutBlue;  
+                            }     
+                        }
+                    } 
+                }
+	    }
+	    break;
+	    
 
-		            	if ( event.motion.x < 3*32 &&  event.motion.x > 2*32 && event.motion.y < 640 &&  event.motion.y > 608 && *click == 0 && *argent >= cout2 ){
-                			if(event.button.button == SDL_BUTTON_LEFT){                   
-                    				*click = 2;    
-                			}
-            			}
-				else{
-            			if (*click == 2){
-		        		towerPositionBlue->y = event.motion.y;
-		        		towerPositionBlue->x = event.motion.x;
-		        		*towerFlagBlue = 1;
-		        		*click = 0; 
-			 		*argent -= cout2;  
-				}
-           		 } 
-}
-}		      
-        	break;
-               
-        
+              case SDL_BUTTON_RIGHT : 
+                    
+                    i = event.button.x / 32;
+                    j = event.button.y / 32; 
+
+                    if ((towerArray[i][j] == 1) && ((i != 0 && j != 21) ||  (i != 5 && j != 21))&& (*click == 0)){   
+                        if(*argent >= *towerCoutBlackE){
+         
+                            towerPositionBlackE->y = event.button.y;
+                            towerPositionBlackE->x = event.button.x;
+                            *towerFlagBlackE = 1;
+                            *argent -= *towerCoutBlackE;
+                            
+                        }
+                    }
+                
+                 
+                    if ((towerArray[i][j]==2) && ((i != 0 && j != 21) ||  (i != 5 && j != 21))&&(*click == 0)){ 
+
+                        if(*argent >= *towerCoutBlueE){
+             
+                            towerPositionBlueE->y = event.button.y;
+                            towerPositionBlueE->x = event.button.x;
+                            *towerFlagBlueE = 1;
+                            *argent -= *towerCoutBlueE;  
+                        }
+                    }
+                  
+                }
+            
+	      default:
+	    break;
+        break;               
     }
 }
